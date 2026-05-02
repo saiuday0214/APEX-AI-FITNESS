@@ -1,0 +1,3897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX — AI Fitness Coach</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=JetBrains+Mono:wght@300;400;500&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c0f;
+  --bg2: #0d1318;
+  --bg3: #111820;
+  --surface: #141c24;
+  --surface2: #1a2330;
+  --border: #1e2d3d;
+  --border2: #243548;
+  --accent: #00e676;
+  --accent2: #00b0ff;
+  --accent3: #ff6d00;
+  --accent-dim: rgba(0,230,118,0.12);
+  --accent2-dim: rgba(0,176,255,0.1);
+  --text: #e8edf2;
+  --text2: #8fa8c0;
+  --text3: #4a6280;
+  --danger: #ff4444;
+  --warn: #ffb300;
+  --radius: 4px;
+  --radius2: 8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Barlow',sans-serif;
+  font-size:15px;
+  line-height:1.6;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* NOISE TEXTURE */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:0;
+  opacity:0.4;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+/* HEADER */
+.header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(8,12,15,0.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  height:56px;
+}
+.logo{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.6rem;font-weight:900;
+  letter-spacing:0.1em;
+  color:var(--accent);
+  text-transform:uppercase;
+}
+.logo span{color:var(--text2);font-weight:400}
+.header-nav{display:flex;gap:2rem}
+.header-nav a{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.7rem;letter-spacing:0.12em;
+  color:var(--text3);text-decoration:none;
+  text-transform:uppercase;
+  transition:color 0.2s;
+}
+.header-nav a:hover{color:var(--accent)}
+.status-dot{
+  display:flex;align-items:center;gap:6px;
+  font-family:'JetBrains Mono',monospace;font-size:0.65rem;
+  color:var(--accent);letter-spacing:0.08em;
+}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,230,118,0.4)}50%{opacity:0.7;box-shadow:0 0 0 6px rgba(0,230,118,0)}}
+
+/* HERO */
+.hero{
+  padding:5rem 2rem 4rem;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';
+  position:absolute;top:-100px;left:50%;transform:translateX(-50%);
+  width:600px;height:600px;
+  background:radial-gradient(ellipse,rgba(0,230,118,0.06) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-tag{
+  display:inline-block;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--accent);
+  border:1px solid rgba(0,230,118,0.3);
+  padding:4px 14px;border-radius:2px;
+  margin-bottom:1.5rem;
+  background:rgba(0,230,118,0.05);
+}
+.hero h1{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:clamp(3rem,8vw,6rem);
+  font-weight:900;
+  line-height:0.95;
+  letter-spacing:-0.01em;
+  text-transform:uppercase;
+  margin-bottom:1.5rem;
+}
+.hero h1 em{color:var(--accent);font-style:normal}
+.hero p{
+  max-width:580px;margin:0 auto 2.5rem;
+  color:var(--text2);font-size:1.05rem;font-weight:300;
+  line-height:1.7;
+}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--accent);color:#000;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1rem;font-weight:800;letter-spacing:0.1em;
+  text-transform:uppercase;
+  padding:14px 32px;border-radius:var(--radius);
+  border:none;cursor:pointer;
+  transition:all 0.2s;
+  text-decoration:none;
+}
+.btn-primary:hover{background:#00ff88;box-shadow:0 0 30px rgba(0,230,118,0.4);transform:translateY(-1px)}
+.stats-row{
+  display:flex;justify-content:center;gap:3rem;
+  margin-top:3.5rem;padding-top:2.5rem;
+  border-top:1px solid var(--border);
+  flex-wrap:wrap;
+}
+.stat{text-align:center}
+.stat-n{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:2rem;font-weight:800;color:var(--accent);
+  display:block;
+}
+.stat-l{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--text3);
+}
+
+/* MAIN LAYOUT */
+.main{max-width:1100px;margin:0 auto;padding:0 1.5rem 4rem}
+
+/* SECTION HEADER */
+.section-header{
+  display:flex;align-items:center;gap:1rem;
+  margin-bottom:2rem;
+  padding-bottom:1rem;
+  border-bottom:1px solid var(--border);
+}
+.section-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.65rem;letter-spacing:0.15em;
+  color:var(--accent);opacity:0.6;
+}
+.section-header h2{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.6rem;font-weight:800;
+  text-transform:uppercase;letter-spacing:0.05em;
+}
+
+/* FORM GRID */
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  overflow:hidden;
+  margin-bottom:1.5rem;
+}
+.form-cell{
+  background:var(--surface);
+  padding:1.2rem 1.4rem;
+  transition:background 0.15s;
+}
+.form-cell:hover{background:var(--surface2)}
+.form-cell.full{grid-column:1/-1}
+label{
+  display:block;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:6px;
+}
+label span{color:var(--accent);margin-left:2px}
+input[type=number],input[type=text],select,textarea{
+  width:100%;
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:var(--radius);
+  color:var(--text);
+  font-family:'Barlow',sans-serif;font-size:0.95rem;
+  padding:9px 12px;
+  outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s;
+  -webkit-appearance:none;appearance:none;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(0,230,118,0.1);
+}
+select option{background:var(--bg2)}
+
+/* RADIO GROUPS */
+.radio-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.radio-group label{
+  margin:0;
+  display:flex;align-items:center;gap:6px;
+  font-family:'Barlow',sans-serif;font-size:0.82rem;
+  letter-spacing:0;text-transform:none;color:var(--text2);
+  background:var(--bg2);border:1px solid var(--border2);
+  padding:6px 12px;border-radius:var(--radius);
+  cursor:pointer;transition:all 0.15s;white-space:nowrap;
+}
+.radio-group input[type=radio],.radio-group input[type=checkbox]{
+  display:none;
+}
+.radio-group label:has(input:checked){
+  background:var(--accent-dim);border-color:var(--accent);color:var(--accent);
+}
+.radio-group label:hover{border-color:var(--border2);color:var(--text)}
+
+/* CHECKBOX GROUP */
+.check-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.check-group label{
+  margin:0;font-family:'Barlow',sans-serif;font-size:0.82rem;
+  letter-spacing:0;text-transform:none;color:var(--text2);
+  background:var(--bg2);border:1px solid var(--border2);
+  padding:6px 12px;border-radius:var(--radius);
+  cursor:pointer;transition:all 0.15s;
+  display:flex;align-items:center;gap:6px;
+}
+.check-group input[type=checkbox]{display:none}
+.check-group label:has(input:checked){
+  background:var(--accent-dim);border-color:var(--accent);color:var(--accent);
+}
+
+/* SUBMIT */
+.form-submit{
+  display:flex;justify-content:flex-end;
+  padding:1.5rem;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  gap:1rem;align-items:center;
+}
+.btn-generate{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--accent);color:#000;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.1rem;font-weight:800;letter-spacing:0.1em;
+  text-transform:uppercase;padding:14px 36px;
+  border-radius:var(--radius);border:none;cursor:pointer;
+  transition:all 0.2s;
+}
+.btn-generate:hover{background:#00ff88;box-shadow:0 0 40px rgba(0,230,118,0.5);transform:translateY(-1px)}
+.btn-generate:active{transform:translateY(0)}
+.btn-generate:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}
+.generate-note{font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase}
+
+/* LOADING */
+.loading-screen{
+  display:none;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  padding:3rem 2rem;
+  text-align:center;
+  margin:2rem 0;
+}
+.loading-screen.active{display:block}
+.loading-bar-wrap{
+  width:100%;max-width:400px;margin:1.5rem auto 0;
+  background:var(--bg2);border-radius:2px;height:3px;overflow:hidden;
+}
+.loading-bar{
+  height:100%;background:var(--accent);
+  width:0%;border-radius:2px;
+  transition:width 0.4s ease;
+}
+.loading-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.7rem;letter-spacing:0.12em;color:var(--accent);
+  text-transform:uppercase;margin-top:0.8rem;
+}
+
+/* RESULTS */
+#results{display:none}
+#results.active{display:block;animation:fadeIn 0.4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* SUMMARY CARDS */
+.summary-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:1px;background:var(--border);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);overflow:hidden;
+  margin-bottom:2rem;
+}
+.summary-card{
+  background:var(--surface);
+  padding:1.2rem 1.4rem;
+  text-align:center;
+}
+.summary-card .s-val{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:2rem;font-weight:800;color:var(--accent);
+  display:block;line-height:1;
+}
+.summary-card .s-unit{font-size:0.9rem;font-weight:600;color:var(--text2)}
+.summary-card .s-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.58rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--text3);margin-top:6px;display:block;
+}
+.summary-card.highlight{background:var(--accent-dim);border:1px solid rgba(0,230,118,0.2)}
+.summary-card.highlight .s-val{color:var(--accent)}
+
+/* PLAN TABS */
+.tabs{
+  display:flex;gap:0;
+  border:1px solid var(--border);
+  border-radius:var(--radius2) var(--radius2) 0 0;
+  overflow:hidden;background:var(--bg2);
+  flex-wrap:wrap;
+}
+.tab-btn{
+  flex:1;min-width:120px;
+  padding:12px 16px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--text3);
+  background:transparent;border:none;cursor:pointer;
+  border-right:1px solid var(--border);
+  transition:all 0.15s;
+}
+.tab-btn:last-child{border-right:none}
+.tab-btn:hover{color:var(--text);background:var(--bg3)}
+.tab-btn.active{color:var(--accent);background:var(--surface);border-bottom:2px solid var(--accent)}
+.tab-content{
+  border:1px solid var(--border);border-top:none;
+  background:var(--surface);
+  border-radius:0 0 var(--radius2) var(--radius2);
+  padding:2rem;
+  margin-bottom:2.5rem;
+  min-height:300px;
+}
+.tab-pane{display:none}
+.tab-pane.active{display:block;animation:fadeIn 0.25s ease}
+
+/* PLAN CONTENT STYLES */
+.plan-section{margin-bottom:2rem}
+.plan-section h3{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.2rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.06em;color:var(--accent2);
+  margin-bottom:1rem;
+  padding-bottom:0.5rem;
+  border-bottom:1px solid var(--border);
+}
+.plan-section h4{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:0.05em;color:var(--text);
+  margin:1rem 0 0.5rem;
+}
+.day-block{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  margin-bottom:10px;
+  overflow:hidden;
+}
+.day-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;
+  background:var(--bg3);
+  cursor:pointer;
+  transition:background 0.15s;
+}
+.day-header:hover{background:var(--surface)}
+.day-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:1rem;text-transform:uppercase;letter-spacing:0.06em;
+}
+.day-badge{
+  font-family:'JetBrains Mono',monospace;font-size:0.6rem;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:3px 10px;border-radius:2px;
+}
+.badge-push{background:rgba(255,109,0,0.15);color:var(--accent3);border:1px solid rgba(255,109,0,0.3)}
+.badge-pull{background:rgba(0,176,255,0.1);color:var(--accent2);border:1px solid rgba(0,176,255,0.2)}
+.badge-legs{background:rgba(0,230,118,0.1);color:var(--accent);border:1px solid rgba(0,230,118,0.2)}
+.badge-full{background:rgba(255,179,0,0.1);color:var(--warn);border:1px solid rgba(255,179,0,0.2)}
+.badge-rest{background:rgba(74,98,128,0.2);color:var(--text3);border:1px solid var(--border)}
+.badge-skill{background:rgba(180,0,255,0.1);color:#d070ff;border:1px solid rgba(180,0,255,0.25)}
+.day-body{
+  display:none;padding:1rem 1.2rem;
+}
+.day-body.open{display:block}
+.exercise-table{
+  width:100%;border-collapse:collapse;
+  font-size:0.88rem;
+}
+.exercise-table th{
+  font-family:'JetBrains Mono',monospace;
+  font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--text3);padding:6px 10px;text-align:left;
+  border-bottom:1px solid var(--border);
+}
+.exercise-table td{
+  padding:8px 10px;
+  border-bottom:1px solid rgba(30,45,61,0.5);
+  color:var(--text2);vertical-align:middle;
+}
+.exercise-table tr:last-child td{border:none}
+.exercise-table tr:hover td{background:rgba(0,230,118,0.03)}
+.ex-name{color:var(--text);font-weight:500}
+.ex-note{font-size:0.75rem;color:var(--text3);margin-top:2px}
+
+/* MEAL CARDS */
+.meal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.meal-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius2);padding:1.2rem;
+  position:relative;overflow:hidden;
+}
+.meal-card::before{
+  content:'';position:absolute;top:0;left:0;width:3px;height:100%;
+  background:var(--accent2);
+}
+.meal-time{
+  font-family:'JetBrains Mono',monospace;font-size:0.6rem;
+  letter-spacing:0.15em;text-transform:uppercase;color:var(--accent2);
+  margin-bottom:0.3rem;
+}
+.meal-name{
+  font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;
+  font-weight:700;text-transform:uppercase;letter-spacing:0.04em;
+  margin-bottom:0.6rem;
+}
+.meal-foods{list-style:none;margin-bottom:0.8rem}
+.meal-foods li{
+  font-size:0.85rem;color:var(--text2);padding:3px 0;
+  border-bottom:1px solid rgba(30,45,61,0.4);
+}
+.meal-foods li:last-child{border:none}
+.meal-macros{
+  display:flex;gap:8px;flex-wrap:wrap;
+}
+.macro-pill{
+  font-family:'JetBrains Mono',monospace;font-size:0.6rem;
+  letter-spacing:0.08em;padding:3px 8px;border-radius:2px;
+  text-transform:uppercase;
+}
+.mp-cal{background:rgba(255,179,0,0.1);color:var(--warn);border:1px solid rgba(255,179,0,0.2)}
+.mp-pro{background:rgba(0,176,255,0.1);color:var(--accent2);border:1px solid rgba(0,176,255,0.2)}
+.mp-carb{background:rgba(0,230,118,0.08);color:var(--accent);border:1px solid rgba(0,230,118,0.15)}
+.mp-fat{background:rgba(255,109,0,0.1);color:var(--accent3);border:1px solid rgba(255,109,0,0.2)}
+
+/* MACROS BAR */
+.macro-bar-row{margin-bottom:1.2rem}
+.macro-bar-label{
+  display:flex;justify-content:space-between;
+  font-family:'JetBrains Mono',monospace;font-size:0.65rem;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:5px;
+}
+.macro-bar-label span:last-child{color:var(--text2)}
+.macro-bar-track{
+  height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;
+}
+.macro-bar-fill{height:100%;border-radius:3px;transition:width 0.8s ease}
+.mb-pro{background:var(--accent2)}
+.mb-carb{background:var(--accent)}
+.mb-fat{background:var(--accent3)}
+
+/* INFO BOXES */
+.info-box{
+  background:var(--bg2);border-left:3px solid var(--accent);
+  border-radius:0 var(--radius) var(--radius) 0;
+  padding:1rem 1.2rem;margin:1rem 0;
+  font-size:0.9rem;color:var(--text2);line-height:1.6;
+}
+.info-box.blue{border-color:var(--accent2)}
+.info-box.warn{border-color:var(--warn)}
+
+/* RECOVERY */
+.recovery-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:12px;
+}
+.recovery-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius2);padding:1.2rem;
+  text-align:center;
+}
+.recovery-icon{font-size:2rem;margin-bottom:0.5rem}
+.recovery-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;
+  margin-bottom:0.4rem;
+}
+.recovery-val{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.5rem;font-weight:800;color:var(--accent);
+}
+.recovery-desc{font-size:0.8rem;color:var(--text3);margin-top:4px}
+
+/* PROGRESS TRACKER */
+.tracker-form{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);padding:1.5rem;
+  margin-bottom:2rem;
+}
+.tracker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:1rem}
+.t-field label{
+  font-family:'JetBrains Mono',monospace;font-size:0.6rem;
+  letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);
+  display:block;margin-bottom:5px;
+}
+.btn-track{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--accent2-dim);color:var(--accent2);
+  border:1px solid rgba(0,176,255,0.3);
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.95rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;
+  padding:10px 24px;border-radius:var(--radius);cursor:pointer;
+  transition:all 0.2s;
+}
+.btn-track:hover{background:rgba(0,176,255,0.15);box-shadow:0 0 20px rgba(0,176,255,0.2)}
+.history-table-wrap{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius2);overflow:hidden;
+}
+.history-table{width:100%;border-collapse:collapse}
+.history-table th{
+  font-family:'JetBrains Mono',monospace;font-size:0.58rem;
+  letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);
+  padding:10px 14px;text-align:left;background:var(--bg3);
+  border-bottom:1px solid var(--border);
+}
+.history-table td{padding:10px 14px;border-bottom:1px solid rgba(30,45,61,0.5);color:var(--text2);font-size:0.88rem}
+.history-table tr:last-child td{border:none}
+.history-table .up{color:var(--accent)}
+.history-table .down{color:var(--danger)}
+.history-table .same{color:var(--text3)}
+.adapt-card{
+  background:var(--accent-dim);border:1px solid rgba(0,230,118,0.2);
+  border-radius:var(--radius2);padding:1.2rem 1.5rem;
+  margin-top:1rem;
+}
+.adapt-card h4{
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:1rem;text-transform:uppercase;letter-spacing:0.08em;
+  color:var(--accent);margin-bottom:0.5rem;
+}
+.adapt-card p{font-size:0.88rem;color:var(--text2);line-height:1.6}
+
+/* SKILL SECTION */
+.skill-drill-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.skill-drill-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);
+  padding:1rem;
+}
+.drill-tag{
+  font-family:'JetBrains Mono',monospace;font-size:0.58rem;
+  letter-spacing:0.12em;text-transform:uppercase;
+  padding:2px 8px;border-radius:2px;
+  background:rgba(180,0,255,0.1);color:#d070ff;border:1px solid rgba(180,0,255,0.2);
+  margin-bottom:0.5rem;display:inline-block;
+}
+.drill-name{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px}
+.drill-desc{font-size:0.8rem;color:var(--text3)}
+
+/* PRINT / EXPORT */
+.action-bar{
+  display:flex;gap:10px;justify-content:flex-end;
+  margin-bottom:1.5rem;flex-wrap:wrap;
+}
+.btn-outline{
+  display:inline-flex;align-items:center;gap:8px;
+  background:transparent;color:var(--text2);
+  border:1px solid var(--border2);
+  font-family:'JetBrains Mono',monospace;font-size:0.62rem;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:8px 18px;border-radius:var(--radius);cursor:pointer;
+  transition:all 0.15s;
+}
+.btn-outline:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+
+/* DISCLAIMER */
+.disclaimer{
+  margin-top:4rem;padding:1.5rem;
+  background:rgba(255,68,68,0.05);border:1px solid rgba(255,68,68,0.15);
+  border-radius:var(--radius2);
+  font-family:'JetBrains Mono',monospace;font-size:0.65rem;
+  letter-spacing:0.06em;line-height:1.7;color:var(--text3);
+}
+.disclaimer strong{color:var(--danger)}
+
+/* UTILITIES */
+.flex-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gap-small{gap:6px}
+.mb-1{margin-bottom:0.5rem}
+.mb-2{margin-bottom:1rem}
+.mb-3{margin-bottom:1.5rem}
+.mt-1{margin-top:0.5rem}
+.mt-2{margin-top:1rem}
+.text-accent{color:var(--accent)}
+.text-muted{color:var(--text3);font-size:0.85rem}
+.text-mono{font-family:'JetBrains Mono',monospace}
+.hidden{display:none!important}
+
+/* =============================================
+   AUTH SYSTEM STYLES
+   ============================================= */
+
+/* Google Sign-in Button */
+.btn-google{
+  display:inline-flex;align-items:center;gap:9px;
+  background:#fff;color:#1a1a1a;
+  font-family:'Barlow',sans-serif;font-size:0.82rem;font-weight:600;
+  padding:8px 16px;border-radius:var(--radius);
+  border:none;cursor:pointer;
+  transition:all 0.18s;box-shadow:0 2px 8px rgba(0,0,0,0.3);
+  white-space:nowrap;
+}
+.btn-google:hover{background:#f1f3f4;box-shadow:0 4px 16px rgba(0,0,0,0.4);transform:translateY(-1px)}
+.btn-google:active{transform:translateY(0)}
+.btn-google svg{flex-shrink:0}
+
+/* Auth Loading Spinner */
+.auth-spinner{
+  width:18px;height:18px;
+  border:2px solid rgba(255,255,255,0.2);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin 0.7s linear infinite;
+  display:none;
+}
+.auth-spinner.active{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* User Avatar + Dropdown */
+.user-menu{position:relative;display:none;align-items:center;gap:10px}
+.user-menu.visible{display:flex}
+.user-avatar-btn{
+  display:flex;align-items:center;gap:9px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:30px;padding:4px 14px 4px 5px;
+  cursor:pointer;transition:all 0.15s;
+}
+.user-avatar-btn:hover{border-color:var(--accent);background:var(--surface2)}
+.user-avatar{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--accent-dim);border:1px solid var(--accent);
+  object-fit:cover;flex-shrink:0;
+}
+.user-avatar-fallback{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--accent-dim);border:1px solid var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:800;
+  color:var(--accent);flex-shrink:0;
+}
+.user-name-short{
+  font-family:'JetBrains Mono',monospace;font-size:0.65rem;
+  letter-spacing:0.06em;color:var(--text2);
+  max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.user-chevron{
+  color:var(--text3);font-size:0.55rem;
+  transition:transform 0.15s;
+}
+.user-avatar-btn.open .user-chevron{transform:rotate(180deg)}
+
+.user-dropdown{
+  position:absolute;top:calc(100% + 10px);right:0;
+  min-width:260px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--radius2);
+  box-shadow:0 16px 48px rgba(0,0,0,0.5);
+  display:none;z-index:200;
+  overflow:hidden;
+  animation:dropIn 0.18s ease;
+}
+.user-dropdown.open{display:block}
+@keyframes dropIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+
+.dropdown-header{
+  padding:1rem 1.2rem;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+}
+.dropdown-user-name{
+  font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;
+}
+.dropdown-user-email{
+  font-family:'JetBrains Mono',monospace;font-size:0.62rem;
+  letter-spacing:0.06em;color:var(--text3);
+}
+.dropdown-plan-status{
+  font-family:'JetBrains Mono',monospace;font-size:0.58rem;
+  letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent);margin-top:6px;display:block;
+}
+.dropdown-menu{list-style:none;padding:0.5rem 0}
+.dropdown-menu li a,.dropdown-menu li button{
+  display:flex;align-items:center;gap:10px;
+  width:100%;text-align:left;
+  padding:9px 1.2rem;
+  font-family:'Barlow',sans-serif;font-size:0.85rem;color:var(--text2);
+  background:none;border:none;cursor:pointer;text-decoration:none;
+  transition:all 0.12s;
+}
+.dropdown-menu li a:hover,.dropdown-menu li button:hover{
+  background:var(--bg2);color:var(--text);
+}
+.dropdown-menu li.danger button{color:var(--danger)}
+.dropdown-menu li.danger button:hover{background:rgba(255,68,68,0.08)}
+.dropdown-divider{height:1px;background:var(--border);margin:0.3rem 0}
+.dropdown-icon{font-size:0.9rem;width:16px;text-align:center}
+
+/* Auth Gate / Toast */
+.auth-toast{
+  position:fixed;bottom:24px;right:24px;z-index:500;
+  background:var(--surface2);border:1px solid var(--border2);
+  border-left:3px solid var(--accent);
+  border-radius:var(--radius2);padding:1rem 1.4rem;
+  min-width:280px;max-width:360px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+  display:none;animation:slideInToast 0.25s ease;
+}
+.auth-toast.show{display:block}
+.auth-toast.error{border-left-color:var(--danger)}
+.auth-toast.warn{border-left-color:var(--warn)}
+@keyframes slideInToast{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.toast-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px}
+.toast-msg{font-size:0.82rem;color:var(--text2)}
+
+/* =============================================
+   DASHBOARD SECTION
+   ============================================= */
+#dashboard-section{
+  display:none;
+  margin-bottom:3rem;
+  animation:fadeIn 0.35s ease;
+}
+#dashboard-section.visible{display:block}
+
+.dashboard-grid{
+  display:grid;
+  grid-template-columns:280px 1fr;
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  overflow:hidden;
+  margin-bottom:2rem;
+}
+@media(max-width:768px){.dashboard-grid{grid-template-columns:1fr}}
+
+/* Profile Sidebar */
+.profile-sidebar{
+  background:var(--surface);
+  padding:2rem 1.5rem;
+}
+.profile-avatar-wrap{text-align:center;margin-bottom:1.5rem}
+.profile-avatar-lg{
+  width:72px;height:72px;border-radius:50%;
+  background:var(--accent-dim);border:2px solid var(--accent);
+  margin:0 auto 0.8rem;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;
+  color:var(--accent);
+  overflow:hidden;
+}
+.profile-avatar-lg img{width:100%;height:100%;object-fit:cover}
+.profile-display-name{
+  font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:800;
+  text-transform:uppercase;letter-spacing:0.06em;
+}
+.profile-email{
+  font-family:'JetBrains Mono',monospace;font-size:0.6rem;
+  letter-spacing:0.08em;color:var(--text3);margin-top:4px;
+}
+.profile-joined{
+  font-family:'JetBrains Mono',monospace;font-size:0.58rem;
+  letter-spacing:0.08em;color:var(--text3);margin-top:3px;
+  text-transform:uppercase;
+}
+.profile-stats{margin-top:1.5rem}
+.profile-stat-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid var(--border);
+}
+.profile-stat-row:last-child{border:none}
+.profile-stat-label{
+  font-family:'JetBrains Mono',monospace;font-size:0.6rem;
+  letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);
+}
+.profile-stat-val{
+  font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;color:var(--accent);
+}
+.btn-edit-profile{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;margin-top:1.2rem;
+  background:transparent;border:1px solid var(--border2);
+  color:var(--text2);font-family:'JetBrains Mono',monospace;
+  font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;
+  padding:9px;border-radius:var(--radius);cursor:pointer;
+  transition:all 0.15s;
+}
+.btn-edit-profile:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* Dashboard Main */
+.dashboard-main{background:var(--bg2);padding:1.5rem}
+.dashboard-tabs{
+  display:flex;gap:0;border-bottom:1px solid var(--border);
+  margin-bottom:1.5rem;
+}
+.dtab{
+  padding:9px 18px;
+  font-family:'JetBrains Mono',monospace;font-size:0.62rem;
+  letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);
+  background:none;border:none;cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:all 0.15s;
+}
+.dtab:hover{color:var(--text)}
+.dtab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+.dtab-pane{display:none}
+.dtab-pane.active{display:block;animation:fadeIn 0.2s ease}
+
+/* Plan History Cards */
+.plan-history-list{display:flex;flex-direction:column;gap:10px}
+.plan-history-card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);
+  padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:0.8rem;
+}
+.plan-history-card.latest{border-color:var(--accent);background:var(--accent-dim)}
+.plan-history-meta{flex:1}
+.plan-history-goal{
+  font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.05em;
+}
+.plan-history-date{
+  font-family:'JetBrains Mono',monospace;font-size:0.6rem;
+  letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);
+  margin-top:3px;
+}
+.plan-history-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.plan-history-badge{
+  font-family:'JetBrains Mono',monospace;font-size:0.55rem;
+  letter-spacing:0.08em;text-transform:uppercase;
+  padding:2px 8px;border-radius:2px;
+  background:var(--bg2);color:var(--text3);border:1px solid var(--border);
+}
+.plan-history-actions{display:flex;gap:6px}
+.btn-load-plan,.btn-del-plan{
+  font-family:'JetBrains Mono',monospace;font-size:0.6rem;
+  letter-spacing:0.08em;text-transform:uppercase;
+  padding:6px 12px;border-radius:var(--radius);
+  border:1px solid var(--border2);cursor:pointer;
+  background:transparent;color:var(--text2);
+  transition:all 0.15s;
+}
+.btn-load-plan:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.btn-del-plan:hover{border-color:var(--danger);color:var(--danger);background:rgba(255,68,68,0.08)}
+
+/* Progress History */
+.progress-history-table{width:100%;border-collapse:collapse;font-size:0.85rem}
+.progress-history-table th{
+  font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--text3);padding:8px 12px;text-align:left;
+  border-bottom:1px solid var(--border);
+}
+.progress-history-table td{padding:9px 12px;border-bottom:1px solid rgba(30,45,61,0.5);color:var(--text2)}
+.progress-history-table tr:last-child td{border:none}
+
+/* Dashboard Empty States */
+.dash-empty{
+  text-align:center;padding:3rem 2rem;
+  color:var(--text3);
+}
+.dash-empty-icon{font-size:2.5rem;margin-bottom:0.8rem}
+.dash-empty-title{
+  font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);
+  margin-bottom:0.4rem;
+}
+.dash-empty-sub{font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.08em}
+
+/* Firebase Config Modal */
+.config-modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;
+  display:none;align-items:center;justify-content:center;padding:1rem;
+  backdrop-filter:blur(6px);
+}
+.config-modal-overlay.open{display:flex;animation:fadeIn 0.2s ease}
+.config-modal{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--radius2);max-width:560px;width:100%;
+  max-height:90vh;overflow-y:auto;
+  box-shadow:0 24px 80px rgba(0,0,0,0.6);
+}
+.config-modal-header{
+  padding:1.5rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:var(--surface);z-index:1;
+}
+.config-modal-title{
+  font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:800;
+  text-transform:uppercase;letter-spacing:0.06em;
+}
+.config-modal-close{
+  background:none;border:1px solid var(--border2);color:var(--text2);
+  width:28px;height:28px;border-radius:4px;cursor:pointer;
+  font-size:0.8rem;display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+}
+.config-modal-close:hover{border-color:var(--danger);color:var(--danger)}
+.config-modal-body{padding:1.5rem}
+.config-step{margin-bottom:1.5rem}
+.config-step-num{
+  font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:5px;display:block;
+}
+.config-step-title{font-weight:600;margin-bottom:6px}
+.config-step-body{font-size:0.85rem;color:var(--text2);line-height:1.6}
+.config-code{
+  background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);
+  padding:0.8rem 1rem;margin-top:8px;
+  font-family:'JetBrains Mono',monospace;font-size:0.75rem;
+  color:var(--accent2);line-height:1.7;white-space:pre-wrap;word-break:break-all;
+  position:relative;
+}
+.copy-code-btn{
+  position:absolute;top:6px;right:6px;
+  background:var(--surface);border:1px solid var(--border2);
+  color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:0.55rem;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:3px 8px;border-radius:2px;cursor:pointer;transition:all 0.15s;
+}
+.copy-code-btn:hover{color:var(--accent);border-color:var(--accent)}
+.config-input{
+  width:100%;background:var(--bg);border:1px solid var(--border2);
+  border-radius:var(--radius);color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:0.78rem;
+  padding:9px 12px;outline:none;transition:border-color 0.2s;
+  margin-top:6px;
+}
+.config-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,230,118,0.08)}
+.config-input::placeholder{color:var(--text3)}
+.config-modal-footer{
+  padding:1rem 1.5rem 1.5rem;
+  display:flex;gap:10px;justify-content:flex-end;
+}
+.btn-save-config{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--accent);color:#000;
+  font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;
+  letter-spacing:0.08em;text-transform:uppercase;
+  padding:10px 24px;border-radius:var(--radius);border:none;cursor:pointer;
+  transition:all 0.2s;
+}
+.btn-save-config:hover{background:#00ff88;box-shadow:0 0 24px rgba(0,230,118,0.4)}
+.btn-cancel-config{
+  display:inline-flex;align-items:center;gap:8px;
+  background:transparent;color:var(--text2);border:1px solid var(--border2);
+  font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;
+  padding:10px 20px;border-radius:var(--radius);cursor:pointer;transition:all 0.15s;
+}
+.btn-cancel-config:hover{border-color:var(--text2);color:var(--text)}
+
+/* Auth Gate Banner (shown when not logged in) */
+.auth-gate{
+  display:none;
+  background:var(--surface);border:1px solid var(--border2);border-left:3px solid var(--accent2);
+  border-radius:var(--radius2);padding:1.2rem 1.5rem;
+  margin-bottom:1.5rem;
+  align-items:center;justify-content:space-between;
+  gap:1rem;flex-wrap:wrap;
+}
+.auth-gate.show{display:flex}
+.auth-gate-text{flex:1}
+.auth-gate-title{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--accent2)}
+.auth-gate-sub{font-size:0.82rem;color:var(--text3);margin-top:2px}
+
+/* Save Status Indicator */
+.save-status{
+  font-family:'JetBrains Mono',monospace;font-size:0.62rem;
+  letter-spacing:0.1em;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:6px;
+  color:var(--text3);transition:color 0.3s;
+}
+.save-status.saving{color:var(--warn)}
+.save-status.saved{color:var(--accent)}
+.save-status.error{color:var(--danger)}
+.save-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* MOBILE */
+@media(max-width:640px){
+  .header-nav{display:none}
+  .hero h1{font-size:2.8rem}
+  .stats-row{gap:1.5rem}
+  .summary-grid{grid-template-columns:repeat(2,1fr)}
+  .tabs{flex-direction:column}
+  .tab-btn{border-right:none;border-bottom:1px solid var(--border)}
+  .form-submit{flex-direction:column;align-items:stretch}
+  .action-bar{justify-content:center}
+  .dashboard-grid{grid-template-columns:1fr}
+  .user-name-short{display:none}
+}
+
+@media print{
+  .header,.hero,.action-bar,.tracker-form,.btn-generate,.form-submit,.loading-screen{display:none!important}
+  body{background:#fff;color:#000}
+  .surface,.bg2,.bg3{background:#f5f5f5!important}
+}
+
+/* =============================================
+   PHYSIQUE GOAL SYSTEM — PREMIUM FEATURE
+   ============================================= */
+.physique-section{
+  margin-bottom:2.5rem;
+  padding:2rem;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  position:relative;
+  overflow:hidden;
+}
+.physique-section::before{
+  content:'PREMIUM';
+  position:absolute;top:14px;right:16px;
+  font-family:'JetBrains Mono',monospace;font-size:0.55rem;
+  letter-spacing:0.2em;color:var(--accent3);
+  border:1px solid rgba(255,109,0,0.35);
+  padding:3px 10px;border-radius:2px;
+  background:rgba(255,109,0,0.08);
+}
+.physique-section-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.3rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;
+  margin-bottom:0.3rem;
+}
+.physique-section-sub{
+  font-size:0.85rem;color:var(--text3);margin-bottom:1.5rem;
+  font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;
+}
+.physique-cards{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+}
+@media(max-width:900px){.physique-cards{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.physique-cards{grid-template-columns:repeat(2,1fr)}}
+
+.physique-card{
+  position:relative;
+  background:var(--bg2);
+  border:2px solid var(--border);
+  border-radius:10px;
+  padding:1.4rem 1rem 1.2rem;
+  cursor:pointer;
+  text-align:center;
+  transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  user-select:none;
+  overflow:hidden;
+}
+.physique-card::before{
+  content:'';
+  position:absolute;inset:0;
+  opacity:0;
+  transition:opacity 0.2s;
+}
+.physique-card:hover{
+  transform:translateY(-4px);
+  border-color:var(--border2);
+}
+.physique-card.selected{
+  transform:translateY(-6px);
+  box-shadow:0 12px 40px rgba(0,0,0,0.4);
+}
+
+/* Per-physique color themes */
+.physique-card[data-physique="vtaper"]{ --pc:#00b0ff; --pc-dim:rgba(0,176,255,0.12); }
+.physique-card[data-physique="aesthetic_lean"]{ --pc:#00e676; --pc-dim:rgba(0,230,118,0.12); }
+.physique-card[data-physique="bulky"]{ --pc:#ff6d00; --pc-dim:rgba(255,109,0,0.12); }
+.physique-card[data-physique="athletic"]{ --pc:#ffb300; --pc-dim:rgba(255,179,0,0.12); }
+.physique-card[data-physique="shredded"]{ --pc:#ff4466; --pc-dim:rgba(255,68,102,0.12); }
+
+.physique-card::before{ background:var(--pc-dim); }
+.physique-card:hover::before{ opacity:1; }
+.physique-card.selected::before{ opacity:1; }
+.physique-card.selected{ border-color:var(--pc); }
+
+.physique-check{
+  position:absolute;top:8px;right:8px;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--pc);
+  display:none;align-items:center;justify-content:center;
+  font-size:0.6rem;color:#000;font-weight:800;
+}
+.physique-card.selected .physique-check{ display:flex; }
+
+.physique-silhouette{
+  width:56px;height:72px;
+  margin:0 auto 0.8rem;
+  position:relative;
+}
+.physique-silhouette svg{
+  width:100%;height:100%;
+}
+.physique-card.selected .physique-silhouette svg path,
+.physique-card.selected .physique-silhouette svg ellipse,
+.physique-card.selected .physique-silhouette svg rect,
+.physique-card.selected .physique-silhouette svg circle{
+  fill:var(--pc);
+}
+.physique-card:not(.selected) .physique-silhouette svg path,
+.physique-card:not(.selected) .physique-silhouette svg ellipse,
+.physique-card:not(.selected) .physique-silhouette svg rect,
+.physique-card:not(.selected) .physique-silhouette svg circle{
+  fill:var(--text3);
+  transition:fill 0.2s;
+}
+.physique-card:hover:not(.selected) .physique-silhouette svg path,
+.physique-card:hover:not(.selected) .physique-silhouette svg ellipse,
+.physique-card:hover:not(.selected) .physique-silhouette svg rect,
+.physique-card:hover:not(.selected) .physique-silhouette svg circle{
+  fill:var(--text2);
+}
+
+.physique-label{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;
+  margin-bottom:0.3rem;
+  color:var(--text);
+  transition:color 0.2s;
+}
+.physique-card.selected .physique-label{ color:var(--pc); }
+.physique-tag{
+  font-family:'JetBrains Mono',monospace;font-size:0.55rem;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:0.5rem;display:block;
+}
+.physique-card.selected .physique-tag{ color:var(--pc);opacity:0.7; }
+.physique-desc{
+  font-size:0.78rem;color:var(--text3);line-height:1.4;
+  transition:color 0.2s;
+}
+.physique-card:hover .physique-desc,.physique-card.selected .physique-desc{ color:var(--text2); }
+
+.physique-priorities{
+  display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:0.6rem;
+}
+.physique-pill{
+  font-family:'JetBrains Mono',monospace;font-size:0.5rem;
+  letter-spacing:0.08em;padding:2px 6px;border-radius:2px;
+  text-transform:uppercase;
+  background:var(--bg3);color:var(--text3);border:1px solid var(--border);
+  transition:all 0.2s;
+}
+.physique-card.selected .physique-pill{
+  background:var(--pc-dim);color:var(--pc);border-color:var(--pc);opacity:0.8;
+}
+
+/* PHYSIQUE RESULT BANNER */
+.physique-banner{
+  background:linear-gradient(135deg,var(--surface) 0%,var(--bg2) 100%);
+  border:1px solid var(--border);
+  border-left:4px solid var(--pc,var(--accent));
+  border-radius:var(--radius2);
+  padding:1.4rem 1.6rem;
+  margin-bottom:2rem;
+  display:flex;gap:1.5rem;align-items:flex-start;
+  flex-wrap:wrap;
+}
+.physique-banner-icon{font-size:2.5rem;flex-shrink:0}
+.physique-banner-content{flex:1;min-width:200px}
+.physique-banner-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.3rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;
+  margin-bottom:0.3rem;
+}
+.physique-banner-body{font-size:0.88rem;color:var(--text2);line-height:1.6}
+.physique-banner-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:0.8rem}
+.physique-badge{
+  font-family:'JetBrains Mono',monospace;font-size:0.58rem;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:4px 10px;border-radius:2px;
+  background:var(--bg3);color:var(--text2);border:1px solid var(--border2);
+}
+.physique-badge.active{
+  background:var(--pc-dim,var(--accent-dim));
+  color:var(--pc,var(--accent));
+  border-color:var(--pc,var(--accent));
+}
+
+/* PRIORITY MUSCLES WIDGET */
+.muscle-priority-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;
+  margin-top:1rem;
+}
+.muscle-priority-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);
+  padding:0.8rem 1rem;display:flex;align-items:center;gap:10px;
+}
+.muscle-priority-card.high-priority{border-color:var(--pc,var(--accent));background:var(--pc-dim,var(--accent-dim))}
+.muscle-priority-bar{
+  width:4px;height:36px;border-radius:2px;flex-shrink:0;
+  background:var(--border2);
+}
+.muscle-priority-bar.high{background:var(--pc,var(--accent))}
+.muscle-priority-bar.med{background:var(--text3)}
+.muscle-priority-bar.low{background:var(--border)}
+.muscle-priority-name{font-size:0.82rem;font-weight:500;color:var(--text);display:block}
+.muscle-priority-level{font-family:'JetBrains Mono',monospace;font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3)}
+.muscle-priority-card.high-priority .muscle-priority-level{color:var(--pc,var(--accent))}
+
+/* CARDIO PROTOCOL CARDS */
+.cardio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:1rem}
+.cardio-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);
+  padding:1rem;
+}
+.cardio-type{
+  font-family:'JetBrains Mono',monospace;font-size:0.58rem;
+  letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--warn);margin-bottom:0.4rem;display:block;
+}
+.cardio-name{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px}
+.cardio-detail{font-size:0.8rem;color:var(--text3)}
+</style>
+</head>
+<body>
+
+<!-- FIREBASE CONFIG MODAL -->
+<div class="config-modal-overlay" id="config-modal-overlay">
+  <div class="config-modal">
+    <div class="config-modal-header">
+      <div class="config-modal-title">🔥 Firebase Setup</div>
+      <button class="config-modal-close" onclick="closeConfigModal()">✕</button>
+    </div>
+    <div class="config-modal-body">
+      <div style="background:var(--accent-dim);border:1px solid rgba(0,230,118,0.2);border-radius:var(--radius);padding:0.8rem 1rem;margin-bottom:1.2rem;font-size:0.82rem;color:var(--text2)">
+        APEX uses <strong>your own Firebase project</strong> so your data stays private. This is a one-time setup. Your config is saved locally in the browser.
+      </div>
+
+      <div class="config-step">
+        <span class="config-step-num">Step 01 / Create Firebase Project</span>
+        <div class="config-step-title">Go to Firebase Console</div>
+        <div class="config-step-body">Visit <strong>console.firebase.google.com</strong> → Create project → Disable Google Analytics (optional) → Continue.</div>
+      </div>
+
+      <div class="config-step">
+        <span class="config-step-num">Step 02 / Enable Google Auth</span>
+        <div class="config-step-title">Authentication → Sign-in method</div>
+        <div class="config-step-body">In your project: <strong>Authentication → Get Started → Google → Enable → Save</strong>. Add your domain to Authorized Domains.</div>
+      </div>
+
+      <div class="config-step">
+        <span class="config-step-num">Step 03 / Create Firestore Database</span>
+        <div class="config-step-title">Firestore Database → Create</div>
+        <div class="config-step-body">Choose <strong>Start in production mode</strong>. Select region close to you. Then go to Rules tab and paste:</div>
+        <div class="config-code" style="font-size:0.68rem">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId;
+    }
+  }
+}</div>
+      </div>
+
+      <div class="config-step">
+        <span class="config-step-num">Step 04 / Get Your Config</span>
+        <div class="config-step-title">Project Settings → Web App → Register App</div>
+        <div class="config-step-body">Click the web icon (&lt;/&gt;), name your app, then copy the <code>firebaseConfig</code> object values below:</div>
+      </div>
+
+      <div style="display:grid;gap:8px;margin-top:0.5rem">
+        <div>
+          <label style="font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:3px">API Key <span style="color:var(--danger)">*</span></label>
+          <input class="config-input" id="cfg-apiKey" placeholder="AIzaSy..." autocomplete="off">
+        </div>
+        <div>
+          <label style="font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:3px">Auth Domain <span style="color:var(--danger)">*</span></label>
+          <input class="config-input" id="cfg-authDomain" placeholder="your-project.firebaseapp.com" autocomplete="off">
+        </div>
+        <div>
+          <label style="font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:3px">Project ID <span style="color:var(--danger)">*</span></label>
+          <input class="config-input" id="cfg-projectId" placeholder="your-project-id" autocomplete="off">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <label style="font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:3px">Storage Bucket</label>
+            <input class="config-input" id="cfg-storageBucket" placeholder="your-project.appspot.com" autocomplete="off">
+          </div>
+          <div>
+            <label style="font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:3px">Messaging Sender ID</label>
+            <input class="config-input" id="cfg-messagingSenderId" placeholder="123456789" autocomplete="off">
+          </div>
+        </div>
+        <div>
+          <label style="font-family:'JetBrains Mono',monospace;font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:3px">App ID <span style="color:var(--danger)">*</span></label>
+          <input class="config-input" id="cfg-appId" placeholder="1:123456789:web:abc..." autocomplete="off">
+        </div>
+      </div>
+
+      <div style="margin-top:1rem;padding:0.8rem;background:var(--bg2);border-radius:var(--radius);border:1px solid var(--border)">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px">🔒 Privacy Note</div>
+        <div style="font-size:0.8rem;color:var(--text3)">Your Firebase config is stored in <code>localStorage</code> on this browser only. It is never sent to any APEX server. You own your data.</div>
+      </div>
+    </div>
+    <div class="config-modal-footer">
+      <button class="btn-cancel-config" onclick="closeConfigModal()">Cancel</button>
+      <button class="btn-save-config" onclick="saveFirebaseConfig()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save & Connect
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH TOAST -->
+<div class="auth-toast" id="auth-toast">
+  <div class="toast-title" id="toast-title">Signed In</div>
+  <div class="toast-msg" id="toast-msg">Welcome back!</div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">APEX <span>/ AI Fitness</span></div>
+  <nav class="header-nav">
+    <a href="#dashboard-section" onclick="showDashboard()">Dashboard</a>
+    <a href="#form-section">Profile</a>
+    <a href="#results">Plan</a>
+    <a href="#tracker-section">Track</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:12px">
+    <!-- UNAUTHENTICATED STATE -->
+    <div id="auth-loading" style="display:flex;align-items:center;gap:8px">
+      <div class="auth-spinner" id="auth-spinner"></div>
+      <button class="btn-google" id="btn-signin" onclick="signInWithGoogle()" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Sign in with Google
+      </button>
+    </div>
+    <!-- AUTHENTICATED STATE -->
+    <div class="user-menu" id="user-menu">
+      <div class="save-status" id="save-status">
+        <span class="save-dot"></span>
+        <span id="save-label">SYNCED</span>
+      </div>
+      <div class="user-avatar-btn" id="user-avatar-btn" onclick="toggleUserDropdown()">
+        <div class="user-avatar-fallback" id="user-avatar-fallback">?</div>
+        <img class="user-avatar" id="user-avatar-img" style="display:none" alt="avatar">
+        <span class="user-name-short" id="user-name-short">User</span>
+        <span class="user-chevron">▼</span>
+      </div>
+      <div class="user-dropdown" id="user-dropdown">
+        <div class="dropdown-header">
+          <div class="dropdown-user-name" id="dd-name">User</div>
+          <div class="dropdown-user-email" id="dd-email">user@email.com</div>
+          <span class="dropdown-plan-status" id="dd-plan-status">No plan saved yet</span>
+        </div>
+        <ul class="dropdown-menu">
+          <li><a href="#dashboard-section" onclick="showDashboard();closeDropdown()"><span class="dropdown-icon">📊</span> Dashboard</a></li>
+          <li><a href="#form-section" onclick="closeDropdown()"><span class="dropdown-icon">✏️</span> Edit Profile</a></li>
+          <li><a href="#tracker-section" onclick="closeDropdown()"><span class="dropdown-icon">📈</span> Progress Tracker</a></li>
+          <div class="dropdown-divider"></div>
+          <li><button onclick="openConfigModal()"><span class="dropdown-icon">⚙️</span> Firebase Settings</button></li>
+          <div class="dropdown-divider"></div>
+          <li class="danger"><button onclick="signOutUser()"><span class="dropdown-icon">🚪</span> Sign Out</button></li>
+        </ul>
+      </div>
+    </div>
+    <div class="status-dot" id="status-dot">
+      <span class="dot"></span>
+      <span id="status-text">SYSTEM ONLINE</span>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">Science-Driven · Fully Personalized · Zero Guesswork</div>
+  <h1>Your <em>AI Coach</em><br>Built on Science</h1>
+  <p>No templates. No generic advice. APEX computes your exact caloric needs, optimal training split, and a full nutrition plan using validated fitness science — then adapts as you progress.</p>
+  <a href="#form-section" class="btn-primary">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    Build My Plan
+  </a>
+  <div class="stats-row">
+    <div class="stat"><span class="stat-n">15+</span><span class="stat-l">Inputs Analyzed</span></div>
+    <div class="stat"><span class="stat-n">5</span><span class="stat-l">Scientific Formulas</span></div>
+    <div class="stat"><span class="stat-n">7-Day</span><span class="stat-l">Workout Split</span></div>
+    <div class="stat"><span class="stat-n">100%</span><span class="stat-l">Dynamic Output</span></div>
+  </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+<!-- ======= DASHBOARD ======= -->
+<section id="dashboard-section">
+  <div class="section-header">
+    <span class="section-num">00 /</span>
+    <h2>My Dashboard</h2>
+    <button class="btn-outline" onclick="hideDashboard()" style="margin-left:auto">✕ Close</button>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- PROFILE SIDEBAR -->
+    <div class="profile-sidebar">
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar-lg" id="profile-avatar-lg">?</div>
+        <div class="profile-display-name" id="profile-display-name">—</div>
+        <div class="profile-email" id="profile-email-display">—</div>
+        <div class="profile-joined" id="profile-joined">Member since —</div>
+      </div>
+      <div class="profile-stats" id="profile-stats">
+        <div class="profile-stat-row">
+          <span class="profile-stat-label">Plans Generated</span>
+          <span class="profile-stat-val" id="stat-plans">0</span>
+        </div>
+        <div class="profile-stat-row">
+          <span class="profile-stat-label">Weeks Logged</span>
+          <span class="profile-stat-val" id="stat-weeks">0</span>
+        </div>
+        <div class="profile-stat-row">
+          <span class="profile-stat-label">Current Goal</span>
+          <span class="profile-stat-val" id="stat-goal" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em">—</span>
+        </div>
+        <div class="profile-stat-row">
+          <span class="profile-stat-label">Last Active</span>
+          <span class="profile-stat-val" id="stat-lastactive" style="font-size:0.7rem">—</span>
+        </div>
+      </div>
+      <button class="btn-edit-profile" onclick="scrollToForm()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit Profile / Regenerate
+      </button>
+    </div>
+
+    <!-- DASHBOARD MAIN -->
+    <div class="dashboard-main">
+      <div class="dashboard-tabs">
+        <button class="dtab active" onclick="showDTab('plans',this)">Saved Plans</button>
+        <button class="dtab" onclick="showDTab('progress',this)">Progress History</button>
+        <button class="dtab" onclick="showDTab('account',this)">Account</button>
+      </div>
+
+      <!-- Plans Tab -->
+      <div class="dtab-pane active" id="dtab-plans">
+        <div id="plans-list" class="plan-history-list">
+          <div class="dash-empty">
+            <div class="dash-empty-icon">📋</div>
+            <div class="dash-empty-title">No Plans Saved Yet</div>
+            <div class="dash-empty-sub">Generate a plan below — it will save automatically</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Tab -->
+      <div class="dtab-pane" id="dtab-progress">
+        <div id="progress-history-wrap">
+          <div class="dash-empty">
+            <div class="dash-empty-icon">📈</div>
+            <div class="dash-empty-title">No Progress Logs Yet</div>
+            <div class="dash-empty-sub">Use the tracker section to log weekly progress</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Tab -->
+      <div class="dtab-pane" id="dtab-account">
+        <div style="display:grid;gap:1rem">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:1.2rem">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.8rem">Account Info</div>
+            <table style="width:100%;font-size:0.85rem">
+              <tr><td style="color:var(--text3);padding:5px 0;width:130px;font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase">Name</td><td id="acc-name" style="color:var(--text2)">—</td></tr>
+              <tr><td style="color:var(--text3);padding:5px 0;font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase">Email</td><td id="acc-email" style="color:var(--text2)">—</td></tr>
+              <tr><td style="color:var(--text3);padding:5px 0;font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase">Provider</td><td style="color:var(--text2)">Google OAuth 2.0</td></tr>
+              <tr><td style="color:var(--text3);padding:5px 0;font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase">UID</td><td id="acc-uid" style="color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:0.6rem">—</td></tr>
+            </table>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius2);padding:1.2rem">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.8rem">Data & Privacy</div>
+            <p style="font-size:0.82rem;color:var(--text2);margin-bottom:1rem;line-height:1.6">Your data is stored in your own Firebase project under your User ID. APEX never has access to it. You can delete all data at any time.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn-outline" onclick="exportUserData()" style="font-size:0.62rem">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export My Data (JSON)
+              </button>
+              <button class="btn-outline" onclick="clearAllUserData()" style="font-size:0.62rem;color:var(--danger);border-color:rgba(255,68,68,0.3)">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                Delete All My Data
+              </button>
+              <button class="btn-outline" onclick="openConfigModal()" style="font-size:0.62rem">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M2 12h2M20 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41"/></svg>
+                Firebase Settings
+              </button>
+            </div>
+          </div>
+          <div style="background:rgba(255,68,68,0.05);border:1px solid rgba(255,68,68,0.2);border-radius:var(--radius2);padding:1rem 1.2rem">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--danger);margin-bottom:0.5rem">Sign Out</div>
+            <button class="btn-outline" onclick="signOutUser()" style="font-size:0.62rem;color:var(--danger);border-color:rgba(255,68,68,0.3)">
+              🚪 Sign Out of APEX
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= FORM ======= -->
+<section id="form-section" style="margin-bottom:3rem">
+  <div class="section-header">
+    <span class="section-num">01 /</span>
+    <h2>Your Fitness Profile</h2>
+  </div>
+
+  <!-- AUTH GATE BANNER -->
+  <div class="auth-gate" id="auth-gate">
+    <div class="auth-gate-text">
+      <div class="auth-gate-title">💾 Save & Sync Your Plan</div>
+      <div class="auth-gate-sub">Sign in with Google to save your plan, track progress across sessions, and access your history from any device.</div>
+    </div>
+    <button class="btn-google" onclick="signInWithGoogle()">
+      <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Sign in with Google
+    </button>
+  </div>
+
+  <!-- PERSONAL -->
+  <div class="form-grid">
+    <div class="form-cell">
+      <label>Age <span>*</span></label>
+      <input type="number" id="f-age" min="13" max="80" placeholder="e.g. 24">
+    </div>
+    <div class="form-cell">
+      <label>Gender <span>*</span></label>
+      <div class="radio-group">
+        <label><input type="radio" name="gender" value="male" checked> Male</label>
+        <label><input type="radio" name="gender" value="female"> Female</label>
+      </div>
+    </div>
+    <div class="form-cell">
+      <label>Height (cm) <span>*</span></label>
+      <input type="number" id="f-height" min="100" max="230" placeholder="e.g. 175">
+    </div>
+    <div class="form-cell">
+      <label>Weight (kg) <span>*</span></label>
+      <input type="number" id="f-weight" min="30" max="250" step="0.5" placeholder="e.g. 72">
+    </div>
+    <div class="form-cell">
+      <label>Body Type</label>
+      <div class="radio-group">
+        <label><input type="radio" name="bodytype" value="ecto" checked> Ectomorph</label>
+        <label><input type="radio" name="bodytype" value="meso"> Mesomorph</label>
+        <label><input type="radio" name="bodytype" value="endo"> Endomorph</label>
+      </div>
+    </div>
+    <div class="form-cell">
+      <label>Sleep (hrs/night)</label>
+      <input type="number" id="f-sleep" min="3" max="12" step="0.5" placeholder="e.g. 7">
+    </div>
+  </div>
+
+  <!-- GOALS -->
+  <div class="form-grid">
+    <div class="form-cell full">
+      <label>Primary Goal <span>*</span></label>
+      <div class="radio-group">
+        <label><input type="radio" name="goal" value="fat_loss" checked> 🔥 Fat Loss</label>
+        <label><input type="radio" name="goal" value="muscle_gain"> 💪 Muscle Gain</label>
+        <label><input type="radio" name="goal" value="strength"> 🏋️ Strength</label>
+        <label><input type="radio" name="goal" value="aesthetic"> ✨ Aesthetic/Recomp</label>
+        <label><input type="radio" name="goal" value="athletic"> ⚡ Athletic Performance</label>
+      </div>
+    </div>
+    <div class="form-cell">
+      <label>Target Weight (kg) — Optional</label>
+      <input type="number" id="f-targetweight" min="30" max="200" step="0.5" placeholder="Leave blank if unsure">
+    </div>
+    <div class="form-cell">
+      <label>Timeline (weeks) <span>*</span></label>
+      <input type="number" id="f-weeks" min="4" max="52" placeholder="e.g. 12">
+    </div>
+    <div class="form-cell">
+      <label>Activity Level <span>*</span></label>
+      <select id="f-activity">
+        <option value="1.2">Sedentary (desk job, no exercise)</option>
+        <option value="1.375">Lightly Active (1-3 days/week)</option>
+        <option value="1.55" selected>Moderately Active (3-5 days/week)</option>
+        <option value="1.725">Very Active (6-7 days/week)</option>
+        <option value="1.9">Extremely Active (athlete / physical job)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- TRAINING -->
+  <div class="form-grid">
+    <div class="form-cell">
+      <label>Training Type <span>*</span></label>
+      <div class="radio-group">
+        <label><input type="radio" name="training" value="gym" checked> 🏢 Gym</label>
+        <label><input type="radio" name="training" value="home"> 🏠 Home</label>
+      </div>
+    </div>
+    <div class="form-cell">
+      <label>Experience Level <span>*</span></label>
+      <div class="radio-group">
+        <label><input type="radio" name="experience" value="beginner" checked> Beginner (&lt;6m)</label>
+        <label><input type="radio" name="experience" value="intermediate"> Intermediate (6m-2y)</label>
+        <label><input type="radio" name="experience" value="advanced"> Advanced (2y+)</label>
+      </div>
+    </div>
+    <div class="form-cell">
+      <label>Daily Workout Time <span>*</span></label>
+      <div class="radio-group">
+        <label><input type="radio" name="time" value="30"> 30 min</label>
+        <label><input type="radio" name="time" value="60" checked> 60 min</label>
+        <label><input type="radio" name="time" value="90"> 90 min</label>
+      </div>
+    </div>
+    <div class="form-cell">
+      <label>Equipment Available</label>
+      <div class="check-group" id="equipment-group">
+        <label><input type="checkbox" value="dumbbells" checked> Dumbbells</label>
+        <label><input type="checkbox" value="barbell"> Barbell</label>
+        <label><input type="checkbox" value="cables"> Cables</label>
+        <label><input type="checkbox" value="pullup_bar"> Pull-up Bar</label>
+        <label><input type="checkbox" value="bands"> Resistance Bands</label>
+        <label><input type="checkbox" value="kettlebell"> Kettlebell</label>
+      </div>
+    </div>
+    <div class="form-cell">
+      <label>Skill / Sport (Optional)</label>
+      <div class="radio-group">
+        <label><input type="radio" name="skill" value="none" checked> None</label>
+        <label><input type="radio" name="skill" value="boxing"> 🥊 Boxing</label>
+        <label><input type="radio" name="skill" value="yoga"> 🧘 Yoga</label>
+        <label><input type="radio" name="skill" value="calisthenics"> 🤸 Calisthenics</label>
+      </div>
+    </div>
+    <div class="form-cell">
+      <label>Injuries or Limitations</label>
+      <input type="text" id="f-injuries" placeholder="e.g. Lower back pain, knee issues">
+    </div>
+  </div>
+
+  <!-- DIET -->
+  <div class="form-grid">
+    <div class="form-cell">
+      <label>Diet Type <span>*</span></label>
+      <div class="radio-group">
+        <label><input type="radio" name="diet" value="nonveg" checked> 🥩 Non-Veg</label>
+        <label><input type="radio" name="diet" value="veg"> 🥦 Vegetarian</label>
+        <label><input type="radio" name="diet" value="vegan"> 🌱 Vegan</label>
+      </div>
+    </div>
+    <div class="form-cell">
+      <label>Supplements Budget</label>
+      <div class="radio-group">
+        <label><input type="radio" name="supplements" value="yes"> Yes (Whey/Creatine)</label>
+        <label><input type="radio" name="supplements" value="no" checked> No (Whole foods)</label>
+      </div>
+    </div>
+    <div class="form-cell">
+      <label>Meals per Day</label>
+      <div class="radio-group">
+        <label><input type="radio" name="meals" value="3"> 3 meals</label>
+        <label><input type="radio" name="meals" value="4" checked> 4 meals</label>
+        <label><input type="radio" name="meals" value="5"> 5 meals</label>
+        <label><input type="radio" name="meals" value="6"> 6 meals</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="form-submit">
+    <div style="display:flex;flex-direction:column;gap:4px;flex:1">
+      <span class="generate-note">All calculations use scientific formulas</span>
+      <span class="save-status" id="form-save-status" style="display:none">
+        <span class="save-dot"></span>
+        <span id="form-save-label">Plan will be saved to your account</span>
+      </span>
+    </div>
+    <button class="btn-generate" onclick="generatePlan()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      Generate My Plan
+    </button>
+  </div>
+</section>
+
+<!-- ======= LOADING ======= -->
+<div class="loading-screen" id="loading">
+  <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em">
+    Computing Your Plan
+  </div>
+  <div class="loading-bar-wrap"><div class="loading-bar" id="loading-bar"></div></div>
+  <div class="loading-label" id="loading-label">Calculating BMR...</div>
+</div>
+
+<!-- ======= RESULTS ======= -->
+<section id="results">
+
+  <div class="section-header">
+    <span class="section-num">02 /</span>
+    <h2>Your Personalized Plan</h2>
+  </div>
+
+  <!-- ACTION BAR -->
+  <div class="action-bar">
+    <button class="btn-outline" onclick="window.print()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print Plan
+    </button>
+    <button class="btn-outline" onclick="scrollToTop()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+      Edit Profile
+    </button>
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <div id="summary-grid" class="summary-grid mb-3"></div>
+
+  <!-- MACRO BARS -->
+  <div id="macro-bars" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);padding:1.5rem 2rem;margin-bottom:2rem"></div>
+
+  <!-- TABS -->
+  <div class="tabs" id="plan-tabs">
+    <button class="tab-btn active" onclick="showTab('workout')">🏋️ Workout</button>
+    <button class="tab-btn" onclick="showTab('diet')">🥗 Diet</button>
+    <button class="tab-btn" onclick="showTab('recovery')">😴 Recovery</button>
+    <button class="tab-btn" id="skill-tab-btn" onclick="showTab('skill')" style="display:none">🎯 Skill</button>
+    <button class="tab-btn" onclick="showTab('strategy')">📈 Strategy</button>
+  </div>
+  <div class="tab-content">
+    <div id="tab-workout" class="tab-pane active"></div>
+    <div id="tab-diet" class="tab-pane"></div>
+    <div id="tab-recovery" class="tab-pane"></div>
+    <div id="tab-skill" class="tab-pane"></div>
+    <div id="tab-strategy" class="tab-pane"></div>
+  </div>
+
+</section>
+
+<!-- ======= PROGRESS TRACKER ======= -->
+<section id="tracker-section" style="margin-top:3rem">
+  <div class="section-header">
+    <span class="section-num">03 /</span>
+    <h2>Progress Tracker</h2>
+  </div>
+  <p class="text-muted mb-2">Log your weekly data. APEX will analyze your progress and adapt your plan in real-time.</p>
+  <div class="tracker-form">
+    <div class="tracker-grid">
+      <div class="t-field">
+        <label>Week #</label>
+        <input type="number" id="t-week" min="1" max="52" placeholder="1">
+      </div>
+      <div class="t-field">
+        <label>Current Weight (kg)</label>
+        <input type="number" id="t-weight" step="0.1" placeholder="72.5">
+      </div>
+      <div class="t-field">
+        <label>Bench Press / Main Lift (kg)</label>
+        <input type="number" id="t-strength" step="1" placeholder="80">
+      </div>
+      <div class="t-field">
+        <label>Energy Level (1–10)</label>
+        <input type="number" id="t-energy" min="1" max="10" placeholder="7">
+      </div>
+      <div class="t-field">
+        <label>Sleep Quality (1–10)</label>
+        <input type="number" id="t-sleepq" min="1" max="10" placeholder="7">
+      </div>
+      <div class="t-field">
+        <label>Hunger Level (1–10)</label>
+        <input type="number" id="t-hunger" min="1" max="10" placeholder="5">
+      </div>
+    </div>
+    <button class="btn-track" onclick="logProgress()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Log This Week
+    </button>
+  </div>
+
+  <div id="adaptation-card" class="adapt-card hidden"></div>
+
+  <div class="history-table-wrap">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>Week</th>
+          <th>Weight (kg)</th>
+          <th>Δ Weight</th>
+          <th>Strength (kg)</th>
+          <th>Δ Strength</th>
+          <th>Energy</th>
+          <th>Hunger</th>
+          <th>Recommendation</th>
+        </tr>
+      </thead>
+      <tbody id="progress-tbody">
+        <tr><td colspan="8" style="text-align:center;color:var(--text3);padding:2rem;font-family:'JetBrains Mono',monospace;font-size:0.7rem;letter-spacing:0.1em">NO DATA YET — START LOGGING TO SEE TRENDS</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- DISCLAIMER -->
+<div class="disclaimer">
+  <strong>⚠ Medical Disclaimer:</strong> APEX is an AI-powered fitness planning tool for educational and informational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Consult a qualified healthcare provider or certified personal trainer before starting any new fitness or nutrition program, especially if you have pre-existing health conditions, injuries, or are pregnant. Caloric and macronutrient calculations are estimates based on validated formulas and individual results will vary.
+</div>
+
+</main>
+
+<script>
+// =============================================
+// SCIENTIFIC CALCULATION ENGINE
+// =============================================
+
+const CALC = {
+  bmi(weight, height) {
+    const hm = height / 100;
+    return +(weight / (hm * hm)).toFixed(1);
+  },
+  bmiCategory(bmi) {
+    if (bmi < 18.5) return { label: 'Underweight', color: '#00b0ff' };
+    if (bmi < 25) return { label: 'Normal', color: '#00e676' };
+    if (bmi < 30) return { label: 'Overweight', color: '#ffb300' };
+    return { label: 'Obese', color: '#ff4444' };
+  },
+  // Mifflin-St Jeor BMR
+  bmr(weight, height, age, gender) {
+    const base = 10 * weight + 6.25 * height - 5 * age;
+    return Math.round(gender === 'male' ? base + 5 : base - 161);
+  },
+  tdee(bmr, activityFactor) {
+    return Math.round(bmr * activityFactor);
+  },
+  goalCalories(tdee, goal, bodytype) {
+    const adjustments = {
+      fat_loss: bodytype === 'endo' ? -600 : -500,
+      muscle_gain: bodytype === 'ecto' ? 400 : 300,
+      strength: 200,
+      aesthetic: -200,
+      athletic: 100
+    };
+    return tdee + (adjustments[goal] || 0);
+  },
+  // Protein: 1.6-2.2g/kg depending on goal & experience
+  proteinGrams(weight, goal, experience) {
+    const rates = {
+      fat_loss: { beginner: 1.8, intermediate: 2.0, advanced: 2.2 },
+      muscle_gain: { beginner: 1.8, intermediate: 2.0, advanced: 2.2 },
+      strength: { beginner: 1.6, intermediate: 1.8, advanced: 2.0 },
+      aesthetic: { beginner: 1.8, intermediate: 2.0, advanced: 2.2 },
+      athletic: { beginner: 1.6, intermediate: 1.8, advanced: 2.0 }
+    };
+    const rate = rates[goal]?.[experience] || 1.8;
+    return Math.round(weight * rate);
+  },
+  fatGrams(calories, fatPct) {
+    return Math.round((calories * fatPct) / 9);
+  },
+  carbGrams(calories, protein, fat) {
+    const remaining = calories - (protein * 4) - (fat * 9);
+    return Math.max(0, Math.round(remaining / 4));
+  },
+  // Ideal weekly weight change
+  weeklyChange(goal) {
+    const map = {
+      fat_loss: -0.5,
+      muscle_gain: 0.25,
+      strength: 0.2,
+      aesthetic: -0.25,
+      athletic: 0
+    };
+    return map[goal] || 0;
+  },
+  lbm(weight, bodytype) {
+    // Estimated body fat by body type
+    const bfPct = { ecto: 0.12, meso: 0.15, endo: 0.22 };
+    const bf = bfPct[bodytype] || 0.15;
+    return +(weight * (1 - bf)).toFixed(1);
+  }
+};
+
+// =============================================
+// WORKOUT DATABASE
+// =============================================
+
+const WORKOUTS = {
+  push: {
+    gym: {
+      beginner: [
+        { name: 'Barbell Bench Press', sets: '3', reps: '8-10', tip: 'Control descent, 3s down' },
+        { name: 'Incline Dumbbell Press', sets: '3', reps: '10-12', tip: '30-45° incline' },
+        { name: 'Overhead Dumbbell Press', sets: '3', reps: '10-12', tip: 'Neutral or pronated grip' },
+        { name: 'Lateral Raises', sets: '3', reps: '12-15', tip: 'Slight forward lean, light weight' },
+        { name: 'Cable Tricep Pushdown', sets: '3', reps: '12-15', tip: 'Elbows pinned to sides' },
+      ],
+      intermediate: [
+        { name: 'Barbell Bench Press', sets: '4', reps: '6-8', tip: 'Micro-load progressively (+1.25kg)' },
+        { name: 'Incline DB Press', sets: '4', reps: '8-10', tip: 'Full stretch at bottom' },
+        { name: 'Cable Flyes', sets: '3', reps: '12-15', tip: 'Feel chest stretch, not shoulders' },
+        { name: 'Seated OHP', sets: '4', reps: '6-8', tip: 'Brace core, don\'t arch excessively' },
+        { name: 'Lateral Raises', sets: '4', reps: '15-20', tip: 'Drop sets on last set' },
+        { name: 'Skull Crushers', sets: '3', reps: '10-12', tip: 'EZ-bar preferred' },
+        { name: 'Overhead Tricep Extension', sets: '3', reps: '12-15', tip: 'Long head stretch' },
+      ],
+      advanced: [
+        { name: 'Barbell Bench Press', sets: '5', reps: '4-6', tip: 'RPE 8-9, rest 3-4 mins' },
+        { name: 'Incline DB Press', sets: '4', reps: '8-10', tip: 'Superset with cable flyes' },
+        { name: 'Weighted Dips', sets: '4', reps: '8-10', tip: 'Lean forward for chest emphasis' },
+        { name: 'Machine Press', sets: '3', reps: '12-15', tip: 'Peak contraction hold' },
+        { name: 'Seated OHP', sets: '4', reps: '6-8', tip: 'Strict form priority' },
+        { name: 'Giant Set: Lateral/Front/Rear Delt', sets: '3', reps: '12 each', tip: 'No rest between movements' },
+        { name: 'Tricep Pushdown + Overhead Ext', sets: '4', reps: '10-12', tip: 'Superset' },
+      ]
+    },
+    home: {
+      beginner: [
+        { name: 'Push-ups', sets: '3', reps: '8-12', tip: 'Full ROM, chest to floor' },
+        { name: 'Wide Push-ups', sets: '3', reps: '8-12', tip: 'Wider = more chest' },
+        { name: 'Pike Push-ups', sets: '3', reps: '8-10', tip: 'Shoulders dominant' },
+        { name: 'Dumbbell Overhead Press', sets: '3', reps: '10-12', tip: 'Seated on chair for stability' },
+        { name: 'Tricep Dips (Chair)', sets: '3', reps: '10-12', tip: 'Elbows back, not flared' },
+      ],
+      intermediate: [
+        { name: 'Diamond Push-ups', sets: '4', reps: '10-15', tip: 'Elbows close to sides' },
+        { name: 'Archer Push-ups', sets: '3', reps: '6-8 each', tip: 'Unilateral overload' },
+        { name: 'Pike Push-ups', sets: '4', reps: '10-12', tip: 'Elevate feet for harder version' },
+        { name: 'DB Bench Press', sets: '4', reps: '8-12', tip: 'Full stretch at bottom' },
+        { name: 'DB Lateral Raises', sets: '3', reps: '15-20', tip: 'Controlled tempo' },
+        { name: 'Band Tricep Pushdown', sets: '3', reps: '15-20', tip: 'Anchor band overhead' },
+      ],
+      advanced: [
+        { name: 'Pseudo Planche Push-ups', sets: '4', reps: '8-12', tip: 'Lean forward, protract' },
+        { name: 'Archer Push-ups', sets: '4', reps: '8-10 each', tip: 'Add weight vest if possible' },
+        { name: 'Elevated Pike Push-ups', sets: '4', reps: '10-15', tip: 'Feet on chair for more shoulder load' },
+        { name: 'DB OHP', sets: '4', reps: '8-10', tip: 'Heavy, strict form' },
+        { name: 'Tricep Dips (feet elevated)', sets: '4', reps: '12-15', tip: 'Weighted if possible' },
+      ]
+    }
+  },
+  pull: {
+    gym: {
+      beginner: [
+        { name: 'Lat Pulldown', sets: '3', reps: '10-12', tip: 'Pull to upper chest, lean back slightly' },
+        { name: 'Seated Cable Row', sets: '3', reps: '10-12', tip: 'Squeeze shoulder blades' },
+        { name: 'Dumbbell Row', sets: '3', reps: '10-12 each', tip: 'Full stretch at bottom' },
+        { name: 'Face Pulls', sets: '3', reps: '15-20', tip: 'External rotation, high rope' },
+        { name: 'Dumbbell Bicep Curl', sets: '3', reps: '12-15', tip: 'Supinate at top' },
+      ],
+      intermediate: [
+        { name: 'Pull-ups / Weighted Pull-ups', sets: '4', reps: '6-10', tip: 'Full dead hang at bottom' },
+        { name: 'Barbell Row', sets: '4', reps: '6-8', tip: 'Hinge to ~45°, pull to hip' },
+        { name: 'Chest-Supported Row', sets: '3', reps: '10-12', tip: 'Removes lower back from equation' },
+        { name: 'Face Pulls', sets: '4', reps: '15-20', tip: 'Rear delt + rotator cuff health' },
+        { name: 'Hammer Curl', sets: '3', reps: '10-12', tip: 'Brachialis emphasis' },
+        { name: 'Incline DB Curl', sets: '3', reps: '10-12', tip: 'Long head stretch at bottom' },
+      ],
+      advanced: [
+        { name: 'Weighted Pull-ups', sets: '5', reps: '4-6', tip: 'Progressive overload weekly' },
+        { name: 'Barbell Row', sets: '4', reps: '6-8', tip: 'RPE 8-9' },
+        { name: 'Meadows Row', sets: '3', reps: '8-10', tip: 'Landmine row variation' },
+        { name: 'Straight Arm Pulldown', sets: '3', reps: '12-15', tip: 'Lats isolation' },
+        { name: 'Face Pulls', sets: '4', reps: '20-25', tip: 'Light, focus on external rotation' },
+        { name: 'Cable Curl + Reverse Curl', sets: '4', reps: '12-15', tip: 'Superset' },
+      ]
+    },
+    home: {
+      beginner: [
+        { name: 'Pull-ups (band assisted)', sets: '3', reps: '5-8', tip: 'Band under knees for assist' },
+        { name: 'DB Bent-over Row', sets: '3', reps: '10-12 each', tip: 'Brace with free hand' },
+        { name: 'Inverted Rows (table)', sets: '3', reps: '8-12', tip: 'Heels on floor, body rigid' },
+        { name: 'Band Pull-aparts', sets: '3', reps: '20', tip: 'Rear delt health' },
+        { name: 'DB Bicep Curl', sets: '3', reps: '12-15', tip: 'Full range of motion' },
+      ],
+      intermediate: [
+        { name: 'Pull-ups', sets: '4', reps: '6-10', tip: 'Use rings or bar' },
+        { name: 'Chin-ups', sets: '4', reps: '6-10', tip: 'Supinated grip, more bicep' },
+        { name: 'DB Row', sets: '4', reps: '10-12 each', tip: 'Add tempo, 2s up 3s down' },
+        { name: 'Band Face Pulls', sets: '3', reps: '20', tip: 'Anchor at head height' },
+        { name: 'Hammer Curl', sets: '3', reps: '12-15', tip: 'Neutral grip' },
+      ],
+      advanced: [
+        { name: 'Weighted Pull-ups', sets: '5', reps: '5-8', tip: 'Backpack with weight plates' },
+        { name: 'L-Sit Pull-ups', sets: '3', reps: '5-8', tip: 'Core + lats' },
+        { name: 'Archer Rows', sets: '3', reps: '8 each', tip: 'Unilateral focus' },
+        { name: 'One-arm Row Progression', sets: '4', reps: '8-10', tip: 'Work towards OAR' },
+        { name: 'DB Curl Variations', sets: '4', reps: '10-15', tip: 'Incline, hammer, concentration' },
+      ]
+    }
+  },
+  legs: {
+    gym: {
+      beginner: [
+        { name: 'Barbell Squat', sets: '3', reps: '8-10', tip: 'Break parallel, chest up, knees out' },
+        { name: 'Romanian Deadlift', sets: '3', reps: '10-12', tip: 'Hip hinge, feel hamstring stretch' },
+        { name: 'Leg Press', sets: '3', reps: '12-15', tip: 'High foot placement = more glutes' },
+        { name: 'Leg Curl', sets: '3', reps: '12-15', tip: 'Control lowering phase' },
+        { name: 'Calf Raises', sets: '4', reps: '15-20', tip: 'Full ROM, pause at bottom' },
+      ],
+      intermediate: [
+        { name: 'Barbell Squat', sets: '4', reps: '6-8', tip: 'Add weight 2.5kg/session if possible' },
+        { name: 'Romanian Deadlift', sets: '4', reps: '8-10', tip: 'Load progressively' },
+        { name: 'Bulgarian Split Squat', sets: '3', reps: '8-10 each', tip: 'Rear foot elevated, front shin vertical' },
+        { name: 'Leg Press', sets: '3', reps: '10-15', tip: 'Drop set on last set' },
+        { name: 'Lying Leg Curl', sets: '4', reps: '10-12', tip: 'Slow eccentric' },
+        { name: 'Leg Extension', sets: '3', reps: '15-20', tip: 'Knee health — avoid if issues' },
+        { name: 'Standing Calf Raise', sets: '5', reps: '15-20', tip: 'Heavy and slow' },
+      ],
+      advanced: [
+        { name: 'Barbell Squat', sets: '5', reps: '4-6', tip: 'Competition depth, belt optional' },
+        { name: 'Pause Squat', sets: '3', reps: '4-6', tip: '2s pause at bottom' },
+        { name: 'Romanian Deadlift', sets: '4', reps: '6-8', tip: 'Heavy load, full hamstring stretch' },
+        { name: 'Bulgarian Split Squat', sets: '4', reps: '8-10', tip: 'Weighted DB or barbell' },
+        { name: 'Leg Press', sets: '3', reps: '12-15', tip: 'Full range, heels only on platform' },
+        { name: 'Hamstring Curl', sets: '4', reps: '10-12', tip: 'Superset with leg extension' },
+        { name: 'Standing Calf Raise', sets: '6', reps: '12-15', tip: 'Heavy + slow — calves are stubborn' },
+      ]
+    },
+    home: {
+      beginner: [
+        { name: 'Bodyweight Squat', sets: '3', reps: '15-20', tip: 'Chest up, depth matters' },
+        { name: 'Romanian DB Deadlift', sets: '3', reps: '10-12', tip: 'Hip dominant movement' },
+        { name: 'Reverse Lunges', sets: '3', reps: '10-12 each', tip: 'Step back, front knee tracks over foot' },
+        { name: 'Glute Bridge', sets: '4', reps: '15-20', tip: 'Squeeze glutes at top' },
+        { name: 'Calf Raises (step)', sets: '4', reps: '20', tip: 'Use staircase edge for ROM' },
+      ],
+      intermediate: [
+        { name: 'Goblet Squat (DB)', sets: '4', reps: '12-15', tip: 'Hold DB at chest' },
+        { name: 'DB Romanian Deadlift', sets: '4', reps: '10-12', tip: 'Feel hamstring stretch' },
+        { name: 'Bulgarian Split Squat (DB)', sets: '3', reps: '10 each', tip: 'Rear foot on chair' },
+        { name: 'Lateral Band Walk', sets: '3', reps: '20 each', tip: 'Hip abductor activation' },
+        { name: 'Single Leg Glute Bridge', sets: '3', reps: '12 each', tip: 'Loaded with DB on hip' },
+        { name: 'Calf Raises', sets: '5', reps: '20', tip: 'Single leg for progression' },
+      ],
+      advanced: [
+        { name: 'Pistol Squat Progression', sets: '4', reps: '5-8 each', tip: 'Use TRX or door for assist' },
+        { name: 'Nordic Curl', sets: '3', reps: '4-8', tip: 'Hardest hamstring exercise' },
+        { name: 'Single Leg RDL', sets: '4', reps: '8-10 each', tip: 'Balance + hamstring' },
+        { name: 'Jump Squat', sets: '4', reps: '10', tip: 'Explosive — plyometric power' },
+        { name: 'Walking Lunges', sets: '3', reps: '20', tip: 'Long stride, weighted DB' },
+        { name: 'Single Leg Calf Raise', sets: '6', reps: '15', tip: 'Add weight via backpack' },
+      ]
+    }
+  },
+  fullbody: {
+    gym: {
+      beginner: [
+        { name: 'Barbell Squat', sets: '3', reps: '8-10', tip: 'Priority compound' },
+        { name: 'Bench Press', sets: '3', reps: '8-10', tip: 'Full ROM' },
+        { name: 'Lat Pulldown', sets: '3', reps: '10-12', tip: 'Control the weight' },
+        { name: 'OHP (DB)', sets: '3', reps: '10-12', tip: 'Seated for stability' },
+        { name: 'Romanian Deadlift', sets: '3', reps: '10-12', tip: 'Hip hinge focus' },
+        { name: 'Plank', sets: '3', reps: '30-60s', tip: 'Glutes tight, straight line' },
+      ],
+      intermediate: [
+        { name: 'Deadlift', sets: '4', reps: '5-6', tip: 'Priority heavy lift' },
+        { name: 'Bench Press', sets: '4', reps: '6-8', tip: 'Micro-load weekly' },
+        { name: 'Barbell Row', sets: '4', reps: '6-8', tip: 'Heavy row' },
+        { name: 'OHP', sets: '3', reps: '8-10', tip: 'Standing for stability' },
+        { name: 'Bulgarian Split Squat', sets: '3', reps: '8-10 each', tip: 'Unilateral balance' },
+        { name: 'Hollow Body Hold', sets: '3', reps: '30s', tip: 'Anterior core' },
+      ],
+      advanced: [
+        { name: 'Deadlift', sets: '5', reps: '3-5', tip: 'Near maximal load' },
+        { name: 'Bench Press', sets: '5', reps: '4-6', tip: 'High volume' },
+        { name: 'Weighted Pull-ups', sets: '4', reps: '5-8', tip: 'Belt + plates' },
+        { name: 'OHP', sets: '4', reps: '6-8', tip: 'Strict press' },
+        { name: 'Front Squat', sets: '4', reps: '5-6', tip: 'Core demanding' },
+        { name: 'Ab Wheel Rollout', sets: '4', reps: '8-12', tip: 'Advanced core' },
+      ]
+    },
+    home: {
+      beginner: [
+        { name: 'Squat', sets: '3', reps: '15', tip: 'Bodyweight perfect form' },
+        { name: 'Push-up', sets: '3', reps: '10-12', tip: 'Chest to floor' },
+        { name: 'Inverted Row', sets: '3', reps: '8-12', tip: 'Use table' },
+        { name: 'Reverse Lunge', sets: '3', reps: '10 each', tip: 'Controlled' },
+        { name: 'Glute Bridge', sets: '3', reps: '15', tip: 'Hip drive' },
+        { name: 'Plank', sets: '3', reps: '30s', tip: 'Core stability' },
+      ],
+      intermediate: [
+        { name: 'DB Squat', sets: '4', reps: '12', tip: 'Heels slightly elevated' },
+        { name: 'Diamond Push-up', sets: '4', reps: '12', tip: 'Tricep dominant' },
+        { name: 'Pull-up', sets: '4', reps: '6-8', tip: 'Dead hang start' },
+        { name: 'DB Romanian DL', sets: '4', reps: '10', tip: 'Hip hinge' },
+        { name: 'Pike Push-up', sets: '3', reps: '10', tip: 'Shoulders' },
+        { name: 'DB Curl', sets: '3', reps: '12', tip: 'Biceps' },
+      ],
+      advanced: [
+        { name: 'Pistol Squat', sets: '4', reps: '6 each', tip: 'Single leg' },
+        { name: 'Archer Push-up', sets: '4', reps: '8 each', tip: 'Unilateral' },
+        { name: 'Weighted Pull-up', sets: '5', reps: '5-6', tip: 'Backpack load' },
+        { name: 'Nordic Curl', sets: '3', reps: '5-6', tip: 'Hamstrings' },
+        { name: 'Handstand Push-up Progression', sets: '3', reps: '5-8', tip: 'Wall assisted' },
+        { name: 'L-Sit Hold', sets: '3', reps: '20s', tip: 'Core + compression' },
+      ]
+    }
+  }
+};
+
+// =============================================
+// FOOD DATABASE (Indian + Global)
+// =============================================
+
+const FOODS = {
+  veg: {
+    breakfast: {
+      sup: [
+        { name: 'Oats with banana', calories: 340, protein: 12, carbs: 58, fat: 6 },
+        { name: 'Whey protein shake (30g) + milk', calories: 210, protein: 32, carbs: 10, fat: 3 },
+      ],
+      nosup: [
+        { name: 'Oats (80g) + full-fat milk (200ml)', calories: 380, protein: 15, carbs: 52, fat: 9 },
+        { name: 'Banana (1 medium)', calories: 89, protein: 1, carbs: 23, fat: 0 },
+      ]
+    },
+    midmorn: {
+      sup: [
+        { name: 'Greek yogurt (200g) + almonds (20g)', calories: 250, protein: 18, carbs: 16, fat: 11 },
+      ],
+      nosup: [
+        { name: 'Peanut butter (2 tbsp) + whole wheat bread', calories: 280, protein: 10, carbs: 24, fat: 16 },
+      ]
+    },
+    lunch: {
+      sup: [
+        { name: 'Brown rice (150g cooked) + Dal (1 cup) + paneer (100g)', calories: 620, protein: 38, carbs: 72, fat: 16 },
+      ],
+      nosup: [
+        { name: 'Rajma (1 cup cooked) + brown rice (150g) + curd (100g)', calories: 580, protein: 28, carbs: 82, fat: 8 },
+      ]
+    },
+    preworkout: {
+      sup: [
+        { name: 'Banana (1) + peanut butter (1 tbsp)', calories: 200, protein: 4, carbs: 28, fat: 8 },
+      ],
+      nosup: [
+        { name: 'Banana (2) + 5 dates', calories: 230, protein: 3, carbs: 58, fat: 1 },
+      ]
+    },
+    postworkout: {
+      sup: [
+        { name: 'Whey protein (30g) + banana', calories: 210, protein: 27, carbs: 25, fat: 2 },
+      ],
+      nosup: [
+        { name: 'Paneer bhurji (150g) + 2 rotis', calories: 420, protein: 22, carbs: 38, fat: 14 },
+      ]
+    },
+    dinner: {
+      sup: [
+        { name: 'Palak paneer (200g) + 2 rotis + salad', calories: 520, protein: 26, carbs: 54, fat: 18 },
+      ],
+      nosup: [
+        { name: 'Soya chunks curry (150g) + brown rice (120g)', calories: 480, protein: 30, carbs: 60, fat: 6 },
+      ]
+    }
+  },
+  nonveg: {
+    breakfast: {
+      sup: [
+        { name: '4 whole eggs scrambled + 2 egg whites', calories: 360, protein: 30, carbs: 4, fat: 22 },
+        { name: 'Whey protein shake (30g) + milk (200ml)', calories: 210, protein: 32, carbs: 10, fat: 3 },
+      ],
+      nosup: [
+        { name: '4 whole eggs + oats (60g)', calories: 420, protein: 28, carbs: 32, fat: 18 },
+        { name: 'Banana (1)', calories: 89, protein: 1, carbs: 23, fat: 0 },
+      ]
+    },
+    midmorn: {
+      sup: [
+        { name: 'Chicken breast (100g) + Greek yogurt', calories: 280, protein: 36, carbs: 10, fat: 6 },
+      ],
+      nosup: [
+        { name: 'Boiled eggs (3) + peanuts (30g)', calories: 310, protein: 24, carbs: 6, fat: 20 },
+      ]
+    },
+    lunch: {
+      sup: [
+        { name: 'Chicken breast (200g) + brown rice (150g) + dal (half cup)', calories: 650, protein: 52, carbs: 68, fat: 10 },
+      ],
+      nosup: [
+        { name: 'Egg curry (3 eggs) + rice (150g) + sabzi', calories: 600, protein: 30, carbs: 70, fat: 16 },
+      ]
+    },
+    preworkout: {
+      sup: [
+        { name: 'Banana (1) + peanut butter (1 tbsp)', calories: 200, protein: 4, carbs: 28, fat: 8 },
+      ],
+      nosup: [
+        { name: 'Banana (2) + handful of peanuts', calories: 250, protein: 7, carbs: 38, fat: 10 },
+      ]
+    },
+    postworkout: {
+      sup: [
+        { name: 'Whey protein (30g) + banana', calories: 210, protein: 27, carbs: 25, fat: 2 },
+      ],
+      nosup: [
+        { name: '4 boiled eggs + 2 rotis', calories: 400, protein: 28, carbs: 34, fat: 16 },
+      ]
+    },
+    dinner: {
+      sup: [
+        { name: 'Grilled chicken (180g) + 2 rotis + salad + curd', calories: 560, protein: 46, carbs: 46, fat: 10 },
+      ],
+      nosup: [
+        { name: 'Fish curry (200g) + brown rice (120g) + sabzi', calories: 520, protein: 38, carbs: 55, fat: 12 },
+      ]
+    }
+  },
+  vegan: {
+    breakfast: {
+      nosup: [
+        { name: 'Oats (80g) + soy milk (250ml) + banana', calories: 380, protein: 15, carbs: 62, fat: 7 },
+      ],
+      sup: [
+        { name: 'Pea protein shake (30g) + oats + banana', calories: 360, protein: 30, carbs: 52, fat: 5 },
+      ]
+    },
+    midmorn: {
+      nosup: [
+        { name: 'Peanut butter (2 tbsp) + apple', calories: 260, protein: 7, carbs: 22, fat: 16 },
+      ],
+      sup: [
+        { name: 'Pea protein (25g) + almonds (30g)', calories: 280, protein: 28, carbs: 8, fat: 14 },
+      ]
+    },
+    lunch: {
+      nosup: [
+        { name: 'Soya chunks (100g dry) + brown rice (150g) + sabzi', calories: 580, protein: 32, carbs: 72, fat: 6 },
+      ],
+      sup: [
+        { name: 'Tofu stir-fry (200g) + brown rice (120g) + lentils', calories: 560, protein: 38, carbs: 64, fat: 10 },
+      ]
+    },
+    preworkout: {
+      nosup: [
+        { name: 'Banana (2) + dates (5)', calories: 220, protein: 3, carbs: 56, fat: 1 },
+      ],
+      sup: [
+        { name: 'Banana (1) + peanut butter (1 tbsp)', calories: 200, protein: 4, carbs: 28, fat: 8 },
+      ]
+    },
+    postworkout: {
+      nosup: [
+        { name: 'Soya milk (300ml) + peanut butter (2 tbsp) + banana', calories: 390, protein: 22, carbs: 38, fat: 14 },
+      ],
+      sup: [
+        { name: 'Pea protein (30g) + banana + soy milk', calories: 320, protein: 32, carbs: 32, fat: 4 },
+      ]
+    },
+    dinner: {
+      nosup: [
+        { name: 'Rajma (1.5 cups) + brown rice (150g) + sabzi + salad', calories: 560, protein: 26, carbs: 82, fat: 6 },
+      ],
+      sup: [
+        { name: 'Lentil soup + tofu (150g) + 2 whole wheat rotis', calories: 520, protein: 34, carbs: 62, fat: 8 },
+      ]
+    }
+  }
+};
+
+// =============================================
+// SKILL DRILLS DATABASE
+// =============================================
+
+const SKILL_DRILLS = {
+  boxing: [
+    { name: 'Shadow Boxing', tag: 'Technique', sets: '5 rounds × 3 min', desc: 'Focus on jab-cross combos, footwork patterns, head movement. Move continuously.' },
+    { name: 'Footwork Drills', tag: 'Agility', sets: '3 rounds × 2 min', desc: 'Box step, pivot, in-and-out. Keep weight on balls of feet, knees soft.' },
+    { name: 'Heavy Bag Work', tag: 'Power', sets: '5 rounds × 2 min', desc: 'Power combos (1-2, 1-1-2, 1-2-3-2). Rest 1 min between rounds.' },
+    { name: 'Speed Bag / Double-end Bag', tag: 'Timing', sets: '3 rounds × 2 min', desc: 'Rhythm training, improves hand-eye coordination and speed.' },
+    { name: 'Jump Rope', tag: 'Cardio + Footwork', sets: '10 min', desc: 'Alternate: 1 min fast, 30s slow. Foundation of boxing conditioning.' },
+    { name: 'Slip Rope Drill', tag: 'Defense', sets: '3 × 2 min', desc: 'Practice slipping punches. Chin stays tucked, eyes forward.' },
+  ],
+  yoga: [
+    { name: 'Sun Salutation (Surya Namaskar)', tag: 'Warm-up', sets: '5-10 rounds', desc: 'Foundation sequence. Synchronize breath with movement. Builds heat.' },
+    { name: 'Downward Dog → Pigeon Pose', tag: 'Hip Mobility', sets: 'Hold 60s each side', desc: 'Deep hip flexor and glute stretch. Essential for athletes.' },
+    { name: 'Warrior I, II, III Sequence', tag: 'Strength + Balance', sets: '3 × 30s each', desc: 'Build leg and core strength while improving single-leg stability.' },
+    { name: 'Bridge Pose (Setu Bandha)', tag: 'Posterior Chain', sets: '3 × 30-60s', desc: 'Glute activation and thoracic spine extension.' },
+    { name: 'Shoulder Stand → Plow Pose', tag: 'Recovery', sets: '2 × 1 min each', desc: 'Stimulates parasympathetic system. Great end-of-day recovery.' },
+    { name: 'Pranayama (Box Breathing)', tag: 'Recovery', sets: '5 min', desc: '4s inhale, 4s hold, 4s exhale, 4s hold. Reduces cortisol, improves HRV.' },
+  ],
+  calisthenics: [
+    { name: 'Planche Progression', tag: 'Skill', sets: '5 × 10s', desc: 'Tuck → advanced tuck → straddle → full. Build shoulder compression strength.' },
+    { name: 'Front Lever Progression', tag: 'Skill', sets: '5 × 10s', desc: 'Tuck → one-leg → straddle → full. Extreme lat and core demand.' },
+    { name: 'Ring Dips', tag: 'Push', sets: '4 × 8-10', desc: 'Rings add instability = greater muscle activation vs bar dips.' },
+    { name: 'Ring Rows', tag: 'Pull', sets: '4 × 10-12', desc: 'Horizontal pull. Progress by lowering rings = more horizontal body.' },
+    { name: 'L-Sit Progression', tag: 'Core', sets: '5 × 15-20s', desc: 'Bent knee → one leg → full L-sit. Requires tricep, hip flexor, and core strength.' },
+    { name: 'Muscle-up Progression', tag: 'Skill', sets: '5 × 3-5', desc: 'Explosive pull + transition + push. Master pull-ups and dips first.' },
+  ]
+};
+
+// =============================================
+// GLOBAL STATE
+// =============================================
+let userData = {};
+let calculations = {};
+let progressLog = [];
+
+// =============================================
+// FORM HELPERS
+// =============================================
+function getRadio(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : null;
+}
+function getChecks(groupId) {
+  return [...document.querySelectorAll(`#${groupId} input:checked`)].map(e => e.value);
+}
+
+// =============================================
+// PLAN GENERATION
+// =============================================
+async function generatePlan() {
+  const age = parseInt(document.getElementById('f-age').value);
+  const height = parseFloat(document.getElementById('f-height').value);
+  const weight = parseFloat(document.getElementById('f-weight').value);
+  const weeks = parseInt(document.getElementById('f-weeks').value);
+  const sleep = parseFloat(document.getElementById('f-sleep').value) || 7;
+  const injuries = document.getElementById('f-injuries').value;
+  const actFactor = parseFloat(document.getElementById('f-activity').value);
+  const targetWeight = parseFloat(document.getElementById('f-targetweight').value) || null;
+
+  // Validate required fields
+  if (!age || !height || !weight || !weeks) {
+    alert('Please fill in Age, Height, Weight, and Timeline before generating your plan.');
+    return;
+  }
+
+  const gender = getRadio('gender');
+  const bodytype = getRadio('bodytype');
+  const goal = getRadio('goal');
+  const training = getRadio('training');
+  const experience = getRadio('experience');
+  const time = getRadio('time');
+  const skill = getRadio('skill');
+  const diet = getRadio('diet');
+  const supplements = getRadio('supplements');
+  const meals = parseInt(getRadio('meals'));
+  const equipment = getChecks('equipment-group');
+
+  // Store user data
+  userData = { age, height, weight, gender, bodytype, goal, training, experience, time, skill, diet, supplements, meals, equipment, weeks, sleep, injuries, actFactor, targetWeight };
+
+  // Show loading
+  const loadingEl = document.getElementById('loading');
+  const barEl = document.getElementById('loading-bar');
+  const labelEl = document.getElementById('loading-label');
+  loadingEl.classList.add('active');
+  document.getElementById('results').style.display = 'none';
+
+  const steps = [
+    [20, 'Calculating BMR (Mifflin-St Jeor)...'],
+    [40, 'Estimating TDEE...'],
+    [55, 'Setting calorie targets...'],
+    [70, 'Building workout split...'],
+    [82, 'Generating meal plan...'],
+    [93, 'Adding recovery protocol...'],
+    [100, 'Finalizing your plan...'],
+  ];
+
+  for (const [pct, label] of steps) {
+    await delay(320);
+    barEl.style.width = pct + '%';
+    labelEl.textContent = label;
+  }
+
+  await delay(400);
+  loadingEl.classList.remove('active');
+
+  // COMPUTE
+  const bmi = CALC.bmi(weight, height);
+  const bmiCat = CALC.bmiCategory(bmi);
+  const bmr = CALC.bmr(weight, height, age, gender);
+  const tdee = CALC.tdee(bmr, actFactor);
+  const targetCal = CALC.goalCalories(tdee, goal, bodytype);
+  const protein = CALC.proteinGrams(weight, goal, experience);
+  const fatPct = goal === 'fat_loss' ? 0.25 : 0.28;
+  const fat = CALC.fatGrams(targetCal, fatPct);
+  const carbs = CALC.carbGrams(targetCal, protein, fat);
+  const lbm = CALC.lbm(weight, bodytype);
+  const weeklyChange = CALC.weeklyChange(goal);
+  const projectedWeight = targetWeight || +(weight + weeklyChange * weeks).toFixed(1);
+
+  calculations = { bmi, bmiCat, bmr, tdee, targetCal, protein, fat, carbs, lbm, weeklyChange, projectedWeight };
+
+  // RENDER
+  renderSummary();
+  renderMacroBars();
+  renderWorkout();
+  renderDiet();
+  renderRecovery();
+  renderSkill();
+  renderStrategy();
+
+  const resultsEl = document.getElementById('results');
+  resultsEl.style.display = 'block';
+  resultsEl.classList.add('active');
+  resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Skill tab visibility
+  document.getElementById('skill-tab-btn').style.display = (skill !== 'none') ? 'block' : 'none';
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// =============================================
+// RENDER: SUMMARY
+// =============================================
+function renderSummary() {
+  const { bmi, bmiCat, bmr, tdee, targetCal, protein, fat, carbs, lbm, projectedWeight, weeklyChange } = calculations;
+  const { goal, weeks } = userData;
+
+  const goalLabels = {
+    fat_loss: '🔥 Fat Loss', muscle_gain: '💪 Muscle Gain',
+    strength: '🏋️ Strength', aesthetic: '✨ Aesthetic', athletic: '⚡ Athletic'
+  };
+
+  const cards = [
+    { val: bmi, unit: '', label: `BMI · ${bmiCat.label}`, color: bmiCat.color, highlight: true },
+    { val: bmr, unit: 'kcal', label: 'BMR (daily at rest)' },
+    { val: tdee, unit: 'kcal', label: 'TDEE (maintenance)' },
+    { val: targetCal, unit: 'kcal', label: `Target calories (${goal === 'fat_loss' ? 'deficit' : goal === 'muscle_gain' ? 'surplus' : 'adjusted'})`, highlight: true },
+    { val: protein, unit: 'g', label: 'Daily protein target' },
+    { val: carbs, unit: 'g', label: 'Daily carbs target' },
+    { val: fat, unit: 'g', label: 'Daily fat target' },
+    { val: lbm, unit: 'kg', label: 'Est. lean body mass' },
+    { val: projectedWeight, unit: 'kg', label: `Projected weight (${weeks}wk)` },
+    { val: (weeklyChange > 0 ? '+' : '') + weeklyChange, unit: 'kg/wk', label: 'Target weight change' },
+  ];
+
+  document.getElementById('summary-grid').innerHTML = cards.map(c => `
+    <div class="summary-card ${c.highlight ? 'highlight' : ''}">
+      <span class="s-val" style="${c.color ? `color:${c.color}` : ''}">${c.val}<span class="s-unit"> ${c.unit}</span></span>
+      <span class="s-label">${c.label}</span>
+    </div>
+  `).join('');
+}
+
+// =============================================
+// RENDER: MACRO BARS
+// =============================================
+function renderMacroBars() {
+  const { targetCal, protein, carbs, fat } = calculations;
+  const total = protein * 4 + carbs * 4 + fat * 9;
+
+  document.getElementById('macro-bars').innerHTML = `
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:1rem;color:var(--text2)">Daily Macro Distribution</div>
+    ${macroBar('Protein', protein, 'g', Math.round(protein * 4 / total * 100), 'mb-pro')}
+    ${macroBar('Carbohydrates', carbs, 'g', Math.round(carbs * 4 / total * 100), 'mb-carb')}
+    ${macroBar('Fat', fat, 'g', Math.round(fat * 9 / total * 100), 'mb-fat')}
+    <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;margin-top:0.8rem">
+      P: ${protein * 4} kcal · C: ${carbs * 4} kcal · F: ${fat * 9} kcal · Total: ${targetCal} kcal
+    </div>
+  `;
+}
+
+function macroBar(name, grams, unit, pct, cls) {
+  return `
+    <div class="macro-bar-row">
+      <div class="macro-bar-label">
+        <span>${name}</span>
+        <span>${grams}${unit} (${pct}%)</span>
+      </div>
+      <div class="macro-bar-track">
+        <div class="macro-bar-fill ${cls}" style="width:${pct}%"></div>
+      </div>
+    </div>
+  `;
+}
+
+// =============================================
+// RENDER: WORKOUT PLAN
+// =============================================
+function renderWorkout() {
+  const { training, experience, goal, time, injuries } = userData;
+  const usePPL = (experience === 'intermediate' || experience === 'advanced') && parseInt(time) >= 60;
+  const days = buildWeeklySchedule(training, experience, goal, usePPL, parseInt(time));
+
+  let html = '';
+
+  // Injuries notice
+  if (injuries && injuries.trim()) {
+    html += `<div class="info-box warn mb-2"><strong>⚠ Injury Note:</strong> You reported: <em>"${injuries}"</em>. Exercises affecting this area have been noted. Consult a physiotherapist before loading these movements. Substitute as needed.</div>`;
+  }
+
+  // Weekly split info
+  const splitName = usePPL ? 'Push / Pull / Legs (PPL)' : 'Full Body';
+  html += `<div class="info-box mb-2">
+    <strong>Split:</strong> ${splitName} · <strong>Level:</strong> ${capitalize(experience)} · <strong>Progression:</strong> Add 2.5–5% load or 1–2 reps per week. Prioritize form over weight.
+  </div>`;
+
+  html += '<div class="plan-section">';
+  days.forEach((day, i) => {
+    html += buildDayBlock(day, i);
+  });
+  html += '</div>';
+
+  // Progression notes
+  html += `
+    <div class="plan-section">
+      <h3>Progression Protocol</h3>
+      <div class="info-box blue">
+        <strong>Double Progression:</strong> When you can complete all sets at the top of the rep range with good form, add weight next session. For beginners, aim to progress every session. For intermediate, every 1-2 weeks. For advanced, every 2-4 weeks.
+      </div>
+      ${experience === 'advanced' ? `<div class="info-box">Consider <strong>periodization</strong>: 3 weeks progressive overload → 1 deload week at 60% volume.</div>` : ''}
+    </div>
+  `;
+
+  document.getElementById('tab-workout').innerHTML = html;
+
+  // Add click listeners for day headers
+  document.querySelectorAll('.day-header').forEach(h => {
+    h.addEventListener('click', () => {
+      const body = h.nextElementSibling;
+      body.classList.toggle('open');
+      h.querySelector('.toggle-icon').textContent = body.classList.contains('open') ? '▲' : '▼';
+    });
+  });
+}
+
+function buildWeeklySchedule(training, experience, goal, usePPL, time) {
+  const days = [];
+  if (!usePPL) {
+    // Full body 3x/week
+    const fb = WORKOUTS.fullbody[training][experience];
+    days.push({ name: 'Monday', type: 'Full Body A', badge: 'full', exercises: fb });
+    days.push({ name: 'Tuesday', type: 'Active Recovery / Cardio', badge: 'rest', exercises: [] });
+    days.push({ name: 'Wednesday', type: 'Full Body B', badge: 'full', exercises: fb.map(e => ({ ...e, sets: experience === 'beginner' ? '3' : '4' })) });
+    days.push({ name: 'Thursday', type: 'Rest', badge: 'rest', exercises: [] });
+    days.push({ name: 'Friday', type: 'Full Body C', badge: 'full', exercises: fb });
+    days.push({ name: 'Saturday', type: 'Cardio / Mobility', badge: 'rest', exercises: [] });
+    days.push({ name: 'Sunday', type: 'Rest', badge: 'rest', exercises: [] });
+  } else {
+    // PPL 6-day
+    const push = WORKOUTS.push[training][experience];
+    const pull = WORKOUTS.pull[training][experience];
+    const legs = WORKOUTS.legs[training][experience];
+    days.push({ name: 'Monday', type: 'Push A', badge: 'push', exercises: push });
+    days.push({ name: 'Tuesday', type: 'Pull A', badge: 'pull', exercises: pull });
+    days.push({ name: 'Wednesday', type: 'Legs A', badge: 'legs', exercises: legs });
+    days.push({ name: 'Thursday', type: 'Push B', badge: 'push', exercises: push.map(e => ({ ...e, tip: e.tip + ' (focus: higher reps than A)' })) });
+    days.push({ name: 'Friday', type: 'Pull B', badge: 'pull', exercises: pull.map(e => ({ ...e })) });
+    days.push({ name: 'Saturday', type: 'Legs B', badge: 'legs', exercises: legs });
+    days.push({ name: 'Sunday', type: 'Rest + Mobility', badge: 'rest', exercises: [] });
+  }
+  return days;
+}
+
+function buildDayBlock(day, i) {
+  const isRest = day.badge === 'rest';
+  const badgeClass = `badge-${day.badge}`;
+  const restContent = isRest ? `
+    <div class="day-body" id="day-body-${i}">
+      ${day.type.includes('Cardio') ? `
+        <div class="info-box">
+          <strong>Cardio / Active Recovery:</strong> 20-40 min low intensity (walking, cycling, swimming). Heart rate 120-140 bpm. Do NOT push hard — recovery day is essential for muscle growth.
+        </div>
+      ` : `
+        <div class="info-box">
+          <strong>Rest Day:</strong> Sleep 7-9 hrs, eat on target, do light stretching 10-15 min. This is where muscle is built — not in the gym.
+        </div>
+      `}
+    </div>
+  ` : `
+    <div class="day-body" id="day-body-${i}">
+      <table class="exercise-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Exercise</th>
+            <th>Sets</th>
+            <th>Reps</th>
+            <th>Coaching Tip</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${day.exercises.map((ex, idx) => `
+            <tr>
+              <td style="color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:0.7rem">${String(idx + 1).padStart(2, '0')}</td>
+              <td><span class="ex-name">${ex.name}</span></td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--accent)">${ex.sets}</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:0.8rem">${ex.reps}</td>
+              <td><span class="ex-note">${ex.tip}</span></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  return `
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-title">${day.name} <span style="color:var(--text3);font-weight:400;font-size:0.9rem">— ${day.type}</span></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="day-badge ${badgeClass}">${day.type}</span>
+          <span class="toggle-icon" style="color:var(--text3);font-size:0.7rem">▼</span>
+        </div>
+      </div>
+      ${restContent}
+    </div>
+  `;
+}
+
+// =============================================
+// RENDER: DIET PLAN
+// =============================================
+function renderDiet() {
+  const { diet, supplements, meals, targetCal } = userData;
+  const { protein, carbs, fat } = calculations;
+  const sup = supplements === 'yes' ? 'sup' : 'nosup';
+  const dietKey = diet === 'nonveg' ? 'nonveg' : diet === 'vegan' ? 'vegan' : 'veg';
+
+  const mealSlots = getMealSlots(meals);
+  const foods = FOODS[dietKey];
+
+  let html = `
+    <div class="plan-section">
+      <h3>Daily Calorie & Macro Targets</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem">
+        <span class="macro-pill mp-cal">🔥 ${targetCal} kcal</span>
+        <span class="macro-pill mp-pro">Protein: ${protein}g</span>
+        <span class="macro-pill mp-carb">Carbs: ${carbs}g</span>
+        <span class="macro-pill mp-fat">Fat: ${fat}g</span>
+      </div>
+      ${supplements === 'yes' ? `
+        <div class="info-box">
+          <strong>Supplement Stack:</strong> Whey Protein (post-workout, 25-30g) · Creatine Monohydrate (5g/day, any time, consistent) · Vitamin D3 + K2 (if limited sunlight). These are evidence-backed. Everything else is optional.
+        </div>
+      ` : `
+        <div class="info-box blue">
+          <strong>Whole Food Focus:</strong> All protein targets are achievable without supplements using ${dietKey === 'nonveg' ? 'eggs, chicken, fish, paneer, dal, peanuts, milk' : dietKey === 'veg' ? 'paneer, curd, dal, rajma, soya, eggs, milk, peanuts' : 'soya chunks, tofu, dal, rajma, peanut butter, hemp seeds'}. Prioritize food variety.
+        </div>
+      `}
+    </div>
+    <div class="plan-section">
+      <h3>Sample Daily Meal Plan</h3>
+      <div class="meal-grid">
+        ${mealSlots.map(slot => buildMealCard(slot, foods, sup)).join('')}
+      </div>
+    </div>
+    <div class="plan-section">
+      <h3>Hydration & Timing</h3>
+      <div class="info-box">
+        <strong>Water:</strong> ${(userData.weight * 0.033).toFixed(1)}L/day minimum. Add 500ml per hour of training. · 
+        <strong>Pre-workout meal:</strong> 60-90 min before. Carbs + moderate protein. · 
+        <strong>Post-workout:</strong> Within 2 hours. Protein + carbs to maximize recovery.
+      </div>
+    </div>
+  `;
+
+  document.getElementById('tab-diet').innerHTML = html;
+}
+
+function getMealSlots(count) {
+  if (count == 3) return ['breakfast', 'lunch', 'dinner'];
+  if (count == 4) return ['breakfast', 'midmorn', 'lunch', 'dinner'];
+  if (count == 5) return ['breakfast', 'midmorn', 'lunch', 'postworkout', 'dinner'];
+  return ['breakfast', 'midmorn', 'lunch', 'preworkout', 'postworkout', 'dinner'];
+}
+
+const mealLabels = {
+  breakfast: ['Breakfast', '7:00 – 8:00 AM'],
+  midmorn: ['Mid-Morning', '10:30 – 11:00 AM'],
+  lunch: ['Lunch', '1:00 – 2:00 PM'],
+  preworkout: ['Pre-Workout', '4:30 – 5:00 PM'],
+  postworkout: ['Post-Workout', '7:30 – 8:00 PM'],
+  dinner: ['Dinner', '8:30 – 9:30 PM'],
+};
+
+function buildMealCard(slot, foods, sup) {
+  const fd = foods[slot];
+  if (!fd) return '';
+  const items = (fd[sup] || fd['nosup'] || []);
+  const totals = items.reduce((a, f) => ({
+    calories: a.calories + (f.calories || 0),
+    protein: a.protein + (f.protein || 0),
+    carbs: a.carbs + (f.carbs || 0),
+    fat: a.fat + (f.fat || 0)
+  }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+
+  const [label, time] = mealLabels[slot] || [slot, ''];
+  return `
+    <div class="meal-card">
+      <div class="meal-time">${time}</div>
+      <div class="meal-name">${label}</div>
+      <ul class="meal-foods">
+        ${items.map(f => `<li>${f.name}</li>`).join('')}
+      </ul>
+      <div class="meal-macros">
+        <span class="macro-pill mp-cal">${totals.calories} kcal</span>
+        <span class="macro-pill mp-pro">${totals.protein}g P</span>
+        <span class="macro-pill mp-carb">${totals.carbs}g C</span>
+        <span class="macro-pill mp-fat">${totals.fat}g F</span>
+      </div>
+    </div>
+  `;
+}
+
+// =============================================
+// RENDER: RECOVERY
+// =============================================
+function renderRecovery() {
+  const { sleep, experience, goal } = userData;
+  const idealSleep = sleep < 7 ? '7-9' : sleep >= 9 ? '8-10' : '7-9';
+  const restDays = experience === 'beginner' ? 2 : experience === 'intermediate' ? 1 : 1;
+  const deload = experience === 'advanced' ? 'Every 4th week — reduce volume by 40%, keep intensity.' : experience === 'intermediate' ? 'Every 5-6th week — reduce sets by 30%.' : 'Not needed yet. Focus on building the habit.';
+
+  document.getElementById('tab-recovery').innerHTML = `
+    <div class="plan-section">
+      <h3>Recovery Metrics</h3>
+      <div class="recovery-grid">
+        <div class="recovery-card">
+          <div class="recovery-icon">😴</div>
+          <div class="recovery-title">Sleep Target</div>
+          <div class="recovery-val">${idealSleep} hrs</div>
+          <div class="recovery-desc">Your input: ${sleep}h. ${sleep < 7 ? '⚠ Increase sleep — it\'s when GH is released.' : '✓ Good'}</div>
+        </div>
+        <div class="recovery-card">
+          <div class="recovery-icon">🏖</div>
+          <div class="recovery-title">Rest Days / Week</div>
+          <div class="recovery-val">${restDays}</div>
+          <div class="recovery-desc">Mandatory for muscle repair and CNS recovery</div>
+        </div>
+        <div class="recovery-card">
+          <div class="recovery-icon">📉</div>
+          <div class="recovery-title">Deload Protocol</div>
+          <div class="recovery-val" style="font-size:1rem">${experience === 'advanced' ? '4-Week' : experience === 'intermediate' ? '5-6 Week' : 'N/A'}</div>
+          <div class="recovery-desc">${deload}</div>
+        </div>
+        <div class="recovery-card">
+          <div class="recovery-icon">🧊</div>
+          <div class="recovery-title">Recovery Tools</div>
+          <div class="recovery-val" style="font-size:1rem">Optional</div>
+          <div class="recovery-desc">Cold shower post-workout, foam rolling, contrast hydrotherapy</div>
+        </div>
+      </div>
+    </div>
+    <div class="plan-section">
+      <h3>Daily Mobility Routine (10 min)</h3>
+      <div class="info-box blue">
+        Perform this every day — especially on rest days. Reduces injury risk and improves performance.
+      </div>
+      <table class="exercise-table" style="margin-top:1rem">
+        <thead><tr><th>#</th><th>Movement</th><th>Duration</th><th>Focus</th></tr></thead>
+        <tbody>
+          <tr><td>01</td><td>Cat-Cow</td><td>1 min</td><td>Spinal mobility</td></tr>
+          <tr><td>02</td><td>90/90 Hip Stretch</td><td>60s each side</td><td>Hip internal/external rotation</td></tr>
+          <tr><td>03</td><td>World's Greatest Stretch</td><td>5 reps each side</td><td>Multi-joint mobility</td></tr>
+          <tr><td>04</td><td>Band Pull-aparts</td><td>2 × 20 reps</td><td>Shoulder health</td></tr>
+          <tr><td>05</td><td>Dead Hang</td><td>3 × 30s</td><td>Shoulder decompression</td></tr>
+          <tr><td>06</td><td>Child's Pose</td><td>60s</td><td>Lower back relief</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="plan-section">
+      <h3>Stress & Lifestyle</h3>
+      <div class="info-box">
+        High cortisol = fat gain + muscle loss. Manage: Consistent sleep schedule · Limit caffeine after 2 PM · 10 min meditation or breathwork · Limit alcohol (disrupts REM sleep and testosterone). Training is 20% of results — sleep and recovery are 40%.
+      </div>
+    </div>
+  `;
+}
+
+// =============================================
+// RENDER: SKILL
+// =============================================
+function renderSkill() {
+  const { skill } = userData;
+  if (!skill || skill === 'none') {
+    document.getElementById('tab-skill').innerHTML = '<p style="color:var(--text3)">No skill selected.</p>';
+    return;
+  }
+
+  const drills = SKILL_DRILLS[skill] || [];
+  const skillNames = { boxing: '🥊 Boxing', yoga: '🧘 Yoga / Flexibility', calisthenics: '🤸 Calisthenics Skills' };
+  const scheduleNote = {
+    boxing: 'Add 2-3 boxing sessions/week. Ideally: Mon/Wed/Fri after main workout, OR as standalone on off-days.',
+    yoga: 'Add 15-20 min yoga each morning or post-workout. On rest days, do 30-40 min full session.',
+    calisthenics: 'Skill work should be done FIRST in your session (when CNS is fresh). 3-4 sessions/week.'
+  };
+
+  document.getElementById('tab-skill').innerHTML = `
+    <div class="plan-section">
+      <h3>${skillNames[skill]} Training</h3>
+      <div class="info-box">${scheduleNote[skill]}</div>
+      <div class="skill-drill-grid mt-2">
+        ${drills.map(d => `
+          <div class="skill-drill-card">
+            <span class="drill-tag">${d.tag}</span>
+            <div class="drill-name">${d.name}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--accent2);margin-bottom:4px">${d.sets}</div>
+            <div class="drill-desc">${d.desc}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    ${skill === 'boxing' ? `
+    <div class="plan-section">
+      <h3>Boxing Conditioning Block</h3>
+      <div class="info-box blue">Add this to the END of your workout, 2x/week: 3 rounds heavy bag · 2 rounds speed bag · 5 min jump rope. This builds conditioning without compromising your lifting.</div>
+    </div>
+    ` : ''}
+    ${skill === 'calisthenics' ? `
+    <div class="plan-section">
+      <h3>Progression Roadmap</h3>
+      <div class="info-box blue">
+        Beginner → Master push-ups, pull-ups, dips, squats (BW) →
+        Intermediate → Muscle-up, front lever tuck, L-sit →
+        Advanced → Planche, full front lever, one-arm pull-up. Track with max hold times per skill.
+      </div>
+    </div>
+    ` : ''}
+  `;
+}
+
+// =============================================
+// RENDER: STRATEGY
+// =============================================
+function renderStrategy() {
+  const { goal, weeks, targetWeight, weight } = userData;
+  const { weeklyChange, projectedWeight, targetCal, tdee } = calculations;
+
+  const goalAdvice = {
+    fat_loss: 'You are in a caloric deficit. The #1 priority is preserving muscle mass — this means high protein + resistance training. Do not go below 1200 kcal (women) or 1500 kcal (men). Track weekly weight at same time of day.',
+    muscle_gain: 'You are in a caloric surplus. Expect 0.25-0.5kg/week gain. If gaining >0.5kg/week, reduce surplus by 100 kcal. Muscle gain requires patience — the process takes months, not weeks.',
+    strength: 'Prioritize compound lifts (squat, bench, deadlift, OHP). Eat enough to fuel performance. Track PRs weekly.',
+    aesthetic: 'Body recomposition = simultaneous fat loss + muscle gain. Requires higher protein, progressive overload, and small deficit. Slower than dedicated bulk or cut, but sustainable.',
+    athletic: 'Performance over aesthetics. Prioritize carbs for energy, adequate protein, explosive training methods. Don\'t over-restrict calories.'
+  };
+
+  document.getElementById('tab-strategy').innerHTML = `
+    <div class="plan-section">
+      <h3>Goal Strategy: ${goal.replace('_', ' ').toUpperCase()}</h3>
+      <div class="info-box">${goalAdvice[goal]}</div>
+    </div>
+    <div class="plan-section">
+      <h3>Progress Milestones</h3>
+      <table class="exercise-table">
+        <thead><tr><th>Week</th><th>Expected Weight</th><th>Focus</th></tr></thead>
+        <tbody>
+          ${[1,2,4,6,8,10,weeks].filter((v,i,a) => a.indexOf(v) === i && v <= weeks).map(w => `
+            <tr>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--accent)">Week ${w}</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:0.8rem">${(weight + weeklyChange * w).toFixed(1)} kg</td>
+              <td style="color:var(--text2);font-size:0.85rem">${getMilestoneNote(w, goal)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="plan-section">
+      <h3>Adjustment Rules</h3>
+      <div class="info-box blue">
+        <strong>If weight isn't moving (2+ weeks):</strong><br>
+        Fat loss: Reduce calories by 100-150 kcal (from carbs/fat, not protein).<br>
+        Muscle gain: Increase calories by 100 kcal.<br><br>
+        <strong>If losing weight too fast (&gt;0.75kg/week):</strong> Increase calories 150-200 kcal — you're losing muscle.<br><br>
+        <strong>If energy is consistently low:</strong> Add 50-75g carbs around workout. Do not slash calories further.
+      </div>
+    </div>
+    <div class="plan-section">
+      <h3>Metrics to Track Weekly</h3>
+      <div class="info-box">
+        ① Weight (morning, fasted, after toilet) · ② Main lift performance (bench/squat/deadlift kg) · ③ Body measurements (waist, chest, hips — monthly) · ④ Progress photos (every 4 weeks, same lighting) · ⑤ Energy & sleep quality (1-10). Use the tracker below ↓
+      </div>
+    </div>
+  `;
+}
+
+function getMilestoneNote(week, goal) {
+  if (week <= 2) return 'Adaptation phase — form focus, no fatigue expected';
+  if (week <= 4) return 'Neural adaptation gains, start adding load';
+  if (week <= 6) return 'Routine solidified, track lifts and weight trend';
+  if (week <= 8) return 'Visible changes expected, stay consistent';
+  if (week <= 10) return 'Halfway+ check — reassess and adjust if needed';
+  return 'Final phase — push for peak performance';
+}
+
+// =============================================
+// PROGRESS TRACKER
+// =============================================
+function logProgress() {
+  const week = parseInt(document.getElementById('t-week').value);
+  const weight = parseFloat(document.getElementById('t-weight').value);
+  const strength = parseFloat(document.getElementById('t-strength').value);
+  const energy = parseInt(document.getElementById('t-energy').value);
+  const sleepq = parseInt(document.getElementById('t-sleepq').value);
+  const hunger = parseInt(document.getElementById('t-hunger').value);
+
+  if (!week || !weight) {
+    alert('Please enter at least Week # and Weight.');
+    return;
+  }
+
+  progressLog.push({ week, weight, strength, energy, sleepq, hunger, date: new Date().toLocaleDateString() });
+  progressLog.sort((a, b) => a.week - b.week);
+  renderProgressTable();
+  renderAdaptation();
+
+  // Clear inputs
+  ['t-week', 't-weight', 't-strength', 't-energy', 't-sleepq', 't-hunger'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+function renderProgressTable() {
+  const tbody = document.getElementById('progress-tbody');
+  if (!progressLog.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:2rem;font-family:\'JetBrains Mono\',monospace;font-size:0.7rem;letter-spacing:0.1em">NO DATA YET</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = progressLog.map((log, i) => {
+    const prev = progressLog[i - 1];
+    const dw = prev ? (log.weight - prev.weight).toFixed(1) : '—';
+    const ds = prev && log.strength && prev.strength ? '+' + (log.strength - prev.strength).toFixed(0) : '—';
+    const dwClass = !prev ? '' : parseFloat(dw) < 0 ? (userData.goal === 'fat_loss' ? 'up' : 'down') : parseFloat(dw) > 0 ? (userData.goal === 'fat_loss' ? 'down' : 'up') : 'same';
+    const rec = getWeeklyRecommendation(log, prev);
+    return `
+      <tr>
+        <td style="font-family:'JetBrains Mono',monospace;color:var(--accent)">W${log.week}</td>
+        <td>${log.weight} kg</td>
+        <td class="${dwClass}">${dw !== '—' ? (parseFloat(dw) > 0 ? '+' : '') + dw + ' kg' : '—'}</td>
+        <td>${log.strength ? log.strength + ' kg' : '—'}</td>
+        <td class="up">${ds}</td>
+        <td style="color:${log.energy >= 7 ? 'var(--accent)' : log.energy >= 5 ? 'var(--warn)' : 'var(--danger)'}">${log.energy || '—'}/10</td>
+        <td>${log.hunger || '—'}/10</td>
+        <td style="font-size:0.82rem;color:var(--text2)">${rec}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function getWeeklyRecommendation(log, prev) {
+  if (!prev) return 'Baseline established';
+  const goal = userData.goal || 'fat_loss';
+  const dw = log.weight - prev.weight;
+
+  if (log.energy <= 4) return '⚠ Energy critical — add 100 kcal carbs pre-workout';
+  if (log.hunger >= 8) return '⚠ High hunger — increase protein or fiber intake';
+  if (goal === 'fat_loss' && dw > 0.5) return '↓ Gaining too fast — reduce 150 kcal';
+  if (goal === 'fat_loss' && dw < -0.8) return '⚠ Losing too fast — add 100-150 kcal, protect muscle';
+  if (goal === 'fat_loss' && Math.abs(dw) < 0.1) return '📉 Stall — reduce 100 kcal or add 1 cardio session';
+  if (goal === 'muscle_gain' && dw < 0.1) return '↑ Not gaining — add 100 kcal surplus';
+  if (goal === 'muscle_gain' && dw > 0.6) return '⚠ Gaining too fast — reduce 100 kcal, check fat gain';
+  if (log.energy >= 8 && log.sleepq >= 8) return '✓ Optimal — progressive overload this week';
+  return '✓ On track — maintain current plan';
+}
+
+function renderAdaptation() {
+  if (progressLog.length < 2) return;
+  const card = document.getElementById('adaptation-card');
+  card.classList.remove('hidden');
+  const last = progressLog[progressLog.length - 1];
+  const prev = progressLog[progressLog.length - 2];
+  const rec = getWeeklyRecommendation(last, prev);
+  card.innerHTML = `
+    <h4>⚡ AI Adaptation Recommendation — Week ${last.week}</h4>
+    <p>${rec}. Current weight: ${last.weight} kg · Energy: ${last.energy || 'N/A'}/10 · Hunger: ${last.hunger || 'N/A'}/10.</p>
+    <p style="margin-top:0.5rem;font-size:0.8rem;color:var(--text3)">Based on your logged data, ${calculations.targetCal ? `your current target remains ${calculations.targetCal} kcal — ` : ''}adjust per recommendations above. Log consistently for better accuracy.</p>
+  `;
+}
+
+// =============================================
+// UI HELPERS
+// =============================================
+function showTab(name) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+function scrollToTop() {
+  document.getElementById('form-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Auto-open first day block
+document.addEventListener('DOMContentLoaded', () => {
+  initAuth();
+});
+</script>
+
+<!-- =============================================
+     FIREBASE AUTH + FIRESTORE SYSTEM
+     ============================================= -->
+<script type="module">
+// ─────────────────────────────────────────────
+// FIREBASE DYNAMIC LOADER
+// Loads Firebase SDK from CDN, initializes app
+// with user-provided or locally-stored config
+// ─────────────────────────────────────────────
+
+const STORAGE_KEY_CONFIG = 'apex_firebase_config';
+const STORAGE_KEY_OFFLINE = 'apex_offline_data';
+
+// ── Expose globals so non-module code can call auth functions ──
+window._apex = {};
+
+// ────────────────────────────────────────────────
+// STEP 1: Load saved config from localStorage
+// ────────────────────────────────────────────────
+function getSavedConfig() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_CONFIG);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function isConfigValid(cfg) {
+  return cfg && cfg.apiKey && cfg.authDomain && cfg.projectId && cfg.appId;
+}
+
+// ────────────────────────────────────────────────
+// STEP 2: Bootstrap Firebase
+// ────────────────────────────────────────────────
+async function bootstrapFirebase(config) {
+  // Dynamic import Firebase modules from CDN
+  const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+  const { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+  const { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, query, orderBy, limit, serverTimestamp }
+    = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+  // Avoid re-initializing if already done
+  const app = getApps().length === 0 ? initializeApp(config) : getApps()[0];
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  window._apex.auth = auth;
+  window._apex.db   = db;
+  window._apex.provider = new GoogleAuthProvider();
+
+  // ── Auth Functions ──────────────────────────
+  window.signInWithGoogle = async () => {
+    setAuthLoading(true);
+    try {
+      await signInWithPopup(auth, window._apex.provider);
+    } catch (e) {
+      console.error('Sign-in error:', e);
+      showToast('Sign-in Failed', e.message || 'Could not sign in. Check your Firebase config.', 'error');
+      setAuthLoading(false);
+    }
+  };
+
+  window.signOutUser = async () => {
+    try {
+      await signOut(auth);
+      closeDropdown();
+      hideDashboard();
+      showToast('Signed Out', 'See you next time!', 'success');
+    } catch (e) {
+      showToast('Error', 'Could not sign out.', 'error');
+    }
+  };
+
+  // ── Auth State Observer ─────────────────────
+  onAuthStateChanged(auth, async (user) => {
+    setAuthLoading(false);
+    if (user) {
+      await handleUserSignedIn(user, db, { serverTimestamp, doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, query, orderBy, limit });
+    } else {
+      handleUserSignedOut();
+    }
+  });
+
+  // ── Firestore Helpers ─────────────────────
+  window._apex.fs = { doc, setDoc, getDoc, collection, addDoc, getDocs, deleteDoc, query, orderBy, limit, serverTimestamp };
+
+  return { auth, db };
+}
+
+// ────────────────────────────────────────────────
+// STEP 3: Handle signed-in user
+// ────────────────────────────────────────────────
+async function handleUserSignedIn(user, db, fs) {
+  const { doc, setDoc, getDoc, collection, getDocs, query, orderBy, serverTimestamp } = fs;
+  window._apex.currentUser = user;
+
+  // Update header UI
+  updateHeaderUI(user);
+  showToast('Welcome Back!', `Signed in as ${user.displayName}`, 'success');
+
+  // Update status
+  setStatusText('CONNECTED');
+
+  // Show form save hint
+  const fss = document.getElementById('form-save-status');
+  if (fss) { fss.style.display = 'flex'; }
+
+  // Hide auth gate
+  const gate = document.getElementById('auth-gate');
+  if (gate) gate.classList.remove('show');
+
+  // ── Upsert user profile doc ──
+  const userRef = doc(db, 'users', user.uid, 'profile', 'info');
+  const snap = await getDoc(userRef);
+  const now = new Date().toISOString();
+
+  if (!snap.exists()) {
+    await setDoc(userRef, {
+      uid: user.uid,
+      name: user.displayName,
+      email: user.email,
+      photoURL: user.photoURL,
+      createdAt: now,
+      lastActive: now,
+    });
+  } else {
+    await setDoc(userRef, { lastActive: now }, { merge: true });
+  }
+
+  // ── Load saved fitness inputs ──
+  const inputsRef = doc(db, 'users', user.uid, 'profile', 'fitnessInputs');
+  const inputsSnap = await getDoc(inputsRef);
+  if (inputsSnap.exists()) {
+    restoreFormInputs(inputsSnap.data());
+  }
+
+  // ── Load plans & progress ──
+  await loadUserPlans(user.uid, db, fs);
+  await loadProgressHistory(user.uid, db, fs);
+
+  // ── Load latest plan & auto-display ──
+  const plansRef = collection(db, 'users', user.uid, 'plans');
+  const plansQ = query(plansRef, orderBy('createdAt', 'desc'));
+  const plansSnap = await getDocs(plansQ);
+
+  if (!plansSnap.empty) {
+    const latestPlan = plansSnap.docs[0].data();
+    if (latestPlan.calculations && latestPlan.userData) {
+      // Restore calculations and userData for progress tracker compatibility
+      window.userData = latestPlan.userData;
+      window.calculations = latestPlan.calculations;
+
+      // Update dashboard status
+      const ddps = document.getElementById('dd-plan-status');
+      if (ddps) ddps.textContent = `Last plan: ${new Date(latestPlan.createdAt).toLocaleDateString()}`;
+    }
+  }
+
+  // ── Load progress log ──
+  const logsRef = collection(db, 'users', user.uid, 'progressLogs');
+  const logsSnap = await getDocs(logsRef);
+  const logs = [];
+  logsSnap.forEach(d => logs.push(d.data()));
+  logs.sort((a, b) => a.week - b.week);
+  if (logs.length) {
+    window.progressLog = logs;
+    renderProgressTable();
+  }
+
+  // Update profile sidebar
+  updateProfileSidebar(user, db, fs);
+}
+
+// ────────────────────────────────────────────────
+// STEP 4: Handle sign-out
+// ────────────────────────────────────────────────
+function handleUserSignedOut() {
+  window._apex.currentUser = null;
+
+  // Header UI → unauthenticated
+  const userMenu = document.getElementById('user-menu');
+  const signinBtn = document.getElementById('btn-signin');
+  if (userMenu) userMenu.classList.remove('visible');
+  if (signinBtn) signinBtn.style.display = 'flex';
+
+  // Show auth gate
+  const gate = document.getElementById('auth-gate');
+  if (gate) gate.classList.add('show');
+
+  // Hide form save hint
+  const fss = document.getElementById('form-save-status');
+  if (fss) fss.style.display = 'none';
+
+  setStatusText('SYSTEM ONLINE');
+
+  // Reset dashboard
+  document.getElementById('dd-plan-status').textContent = 'No plan saved yet';
+}
+
+// ────────────────────────────────────────────────
+// STEP 5: Save plan to Firestore
+// ────────────────────────────────────────────────
+window._apex.savePlan = async function(userData, calculations) {
+  const user = window._apex.currentUser;
+  if (!user || !window._apex.db) return;
+
+  const { collection, addDoc, doc, setDoc } = window._apex.fs;
+  const db = window._apex.db;
+
+  setSaveStatus('saving', 'SAVING…');
+
+  try {
+    // Save fitness inputs for auto-fill on next login
+    const inputsRef = doc(db, 'users', user.uid, 'profile', 'fitnessInputs');
+    await setDoc(inputsRef, { ...userData, savedAt: new Date().toISOString() });
+
+    // Save plan snapshot
+    const plansRef = collection(db, 'users', user.uid, 'plans');
+    const planDoc = {
+      userData: sanitizeForFirestore(userData),
+      calculations: sanitizeForFirestore(calculations),
+      createdAt: new Date().toISOString(),
+      goal: userData.goal,
+      physique: userData.physique || 'none',
+      targetCal: calculations.targetCal,
+      weeks: userData.weeks,
+    };
+    await addDoc(plansRef, planDoc);
+
+    setSaveStatus('saved', 'SAVED ✓');
+    setTimeout(() => setSaveStatus('idle', 'SYNCED'), 3000);
+
+    // Refresh dashboard plans list
+    await loadUserPlans(user.uid, db, window._apex.fs);
+
+    // Update dropdown status
+    const ddps = document.getElementById('dd-plan-status');
+    if (ddps) ddps.textContent = `Last plan: ${new Date().toLocaleDateString()}`;
+
+  } catch (e) {
+    console.error('Save error:', e);
+    setSaveStatus('error', 'SAVE FAILED');
+    showToast('Save Failed', 'Could not save to Firestore. Check your config.', 'error');
+  }
+};
+
+// ────────────────────────────────────────────────
+// STEP 6: Save progress log entry
+// ────────────────────────────────────────────────
+window._apex.saveProgressLog = async function(logEntry) {
+  const user = window._apex.currentUser;
+  if (!user || !window._apex.db) return;
+
+  const { collection, addDoc } = window._apex.fs;
+  const db = window._apex.db;
+
+  try {
+    const logsRef = collection(db, 'users', user.uid, 'progressLogs');
+    await addDoc(logsRef, { ...logEntry, savedAt: new Date().toISOString() });
+    await loadProgressHistory(user.uid, db, window._apex.fs);
+  } catch (e) {
+    console.error('Progress log save error:', e);
+  }
+};
+
+// ────────────────────────────────────────────────
+// STEP 7: Load plans list for dashboard
+// ────────────────────────────────────────────────
+async function loadUserPlans(uid, db, fs) {
+  const { collection, getDocs, query, orderBy, deleteDoc, doc } = fs;
+  const plansRef = collection(db, 'users', uid, 'plans');
+  const q = query(plansRef, orderBy('createdAt', 'desc'));
+  const snap = await getDocs(q);
+
+  const plansList = document.getElementById('plans-list');
+  if (!plansList) return;
+
+  if (snap.empty) {
+    plansList.innerHTML = `<div class="dash-empty"><div class="dash-empty-icon">📋</div><div class="dash-empty-title">No Plans Saved Yet</div><div class="dash-empty-sub">Generate a plan below — it will save automatically</div></div>`;
+    document.getElementById('stat-plans').textContent = '0';
+    return;
+  }
+
+  document.getElementById('stat-plans').textContent = snap.size;
+  const goalLabels = { fat_loss:'🔥 Fat Loss', muscle_gain:'💪 Muscle Gain', strength:'🏋️ Strength', aesthetic:'✨ Aesthetic', athletic:'⚡ Athletic' };
+
+  let html = '';
+  let isFirst = true;
+  const docIds = [];
+
+  snap.forEach(d => {
+    const p = d.data();
+    docIds.push({ id: d.id, data: p });
+    const date = new Date(p.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    const isLatest = isFirst;
+    isFirst = false;
+
+    html += `
+      <div class="plan-history-card ${isLatest ? 'latest' : ''}">
+        <div class="plan-history-meta">
+          ${isLatest ? '<div style="font-family:\'JetBrains Mono\',monospace;font-size:0.55rem;letter-spacing:0.1em;color:var(--accent);text-transform:uppercase;margin-bottom:4px">● LATEST PLAN</div>' : ''}
+          <div class="plan-history-goal">${goalLabels[p.goal] || p.goal || '—'}</div>
+          <div class="plan-history-date">${date}</div>
+          <div class="plan-history-badges">
+            ${p.physique && p.physique !== 'none' ? `<span class="plan-history-badge">${p.physique.replace('_',' ')}</span>` : ''}
+            ${p.targetCal ? `<span class="plan-history-badge">${p.targetCal} kcal</span>` : ''}
+            ${p.weeks ? `<span class="plan-history-badge">${p.weeks} weeks</span>` : ''}
+            ${p.userData?.training ? `<span class="plan-history-badge">${p.userData.training}</span>` : ''}
+          </div>
+        </div>
+        <div class="plan-history-actions">
+          <button class="btn-load-plan" onclick="loadSavedPlan('${d.id}')">Load Plan</button>
+          <button class="btn-del-plan" onclick="deleteSavedPlan('${d.id}')">Delete</button>
+        </div>
+      </div>
+    `;
+  });
+
+  plansList.innerHTML = html;
+
+  // Store references for load/delete
+  window._apex._planDocs = docIds;
+
+  // Load plan into session
+  window._apex.loadSavedPlan = async (planId) => {
+    const entry = (window._apex._planDocs || []).find(p => p.id === planId);
+    if (!entry) return;
+    const p = entry.data;
+    if (p.userData) restoreFormInputs(p.userData);
+    if (p.userData) window.userData = p.userData;
+    if (p.calculations) window.calculations = p.calculations;
+    hideDashboard();
+    document.getElementById('form-section').scrollIntoView({ behavior: 'smooth' });
+    showToast('Plan Loaded', 'Form has been pre-filled with your saved data. Click Generate to rebuild.', 'success');
+  };
+
+  window._apex.deleteSavedPlan = async (planId) => {
+    if (!confirm('Delete this plan? This cannot be undone.')) return;
+    try {
+      await deleteDoc(doc(db, 'users', uid, 'plans', planId));
+      await loadUserPlans(uid, db, fs);
+      showToast('Deleted', 'Plan removed from your account.', 'success');
+    } catch (e) {
+      showToast('Error', 'Could not delete plan.', 'error');
+    }
+  };
+}
+
+// Expose for inline onclick
+window.loadSavedPlan = (id) => window._apex.loadSavedPlan && window._apex.loadSavedPlan(id);
+window.deleteSavedPlan = (id) => window._apex.deleteSavedPlan && window._apex.deleteSavedPlan(id);
+
+// ────────────────────────────────────────────────
+// STEP 8: Load progress history for dashboard
+// ────────────────────────────────────────────────
+async function loadProgressHistory(uid, db, fs) {
+  const { collection, getDocs } = fs;
+  const logsRef = collection(db, 'users', uid, 'progressLogs');
+  const snap = await getDocs(logsRef);
+
+  const wrap = document.getElementById('progress-history-wrap');
+  const statWeeks = document.getElementById('stat-weeks');
+  if (!wrap) return;
+
+  if (snap.empty) {
+    wrap.innerHTML = `<div class="dash-empty"><div class="dash-empty-icon">📈</div><div class="dash-empty-title">No Progress Logs Yet</div><div class="dash-empty-sub">Use the tracker section to log weekly progress</div></div>`;
+    if (statWeeks) statWeeks.textContent = '0';
+    return;
+  }
+
+  const logs = [];
+  snap.forEach(d => logs.push(d.data()));
+  logs.sort((a, b) => a.week - b.week);
+
+  if (statWeeks) statWeeks.textContent = logs.length;
+
+  let html = `<table class="progress-history-table">
+    <thead><tr><th>Week</th><th>Weight</th><th>Strength</th><th>Energy</th><th>Hunger</th><th>Saved</th></tr></thead>
+    <tbody>`;
+
+  logs.forEach(l => {
+    html += `<tr>
+      <td style="font-family:'JetBrains Mono',monospace;color:var(--accent)">W${l.week}</td>
+      <td>${l.weight} kg</td>
+      <td>${l.strength ? l.strength + ' kg' : '—'}</td>
+      <td style="color:${l.energy >= 7 ? 'var(--accent)' : l.energy >= 5 ? 'var(--warn)' : 'var(--danger)'}">${l.energy || '—'}/10</td>
+      <td>${l.hunger || '—'}/10</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--text3)">${l.savedAt ? new Date(l.savedAt).toLocaleDateString() : '—'}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+// ────────────────────────────────────────────────
+// STEP 9: Update profile sidebar
+// ────────────────────────────────────────────────
+async function updateProfileSidebar(user, db, fs) {
+  const { doc, getDoc } = fs;
+
+  // Avatar
+  const avatarLg = document.getElementById('profile-avatar-lg');
+  if (user.photoURL) {
+    avatarLg.innerHTML = `<img src="${user.photoURL}" style="width:100%;height:100%;object-fit:cover" alt="avatar">`;
+  } else {
+    avatarLg.textContent = (user.displayName || 'U').charAt(0).toUpperCase();
+  }
+
+  document.getElementById('profile-display-name').textContent = user.displayName || 'User';
+  document.getElementById('profile-email-display').textContent = user.email;
+
+  // Joined date from profile doc
+  const profileRef = doc(db, 'users', user.uid, 'profile', 'info');
+  const snap = await getDoc(profileRef);
+  if (snap.exists()) {
+    const d = snap.data();
+    const joined = d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-IN', { month:'long', year:'numeric' }) : '—';
+    document.getElementById('profile-joined').textContent = `Member since ${joined}`;
+    const lastActive = d.lastActive ? new Date(d.lastActive).toLocaleDateString() : '—';
+    document.getElementById('stat-lastactive').textContent = lastActive;
+  }
+
+  // Account tab
+  document.getElementById('acc-name').textContent = user.displayName || '—';
+  document.getElementById('acc-email').textContent = user.email;
+  document.getElementById('acc-uid').textContent = user.uid;
+
+  // Goal
+  const statGoal = document.getElementById('stat-goal');
+  if (window.userData?.goal && statGoal) statGoal.textContent = window.userData.goal.replace('_', ' ');
+}
+
+// ────────────────────────────────────────────────
+// STEP 10: Restore form inputs from saved data
+// ────────────────────────────────────────────────
+function restoreFormInputs(data) {
+  if (!data) return;
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined && val !== null) el.value = val; };
+  const setRadio = (name, val) => {
+    const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
+    if (el) el.checked = true;
+  };
+  const setCheck = (val, checked) => {
+    const el = document.querySelector(`#equipment-group input[value="${val}"]`);
+    if (el) el.checked = checked;
+  };
+
+  set('f-age', data.age);
+  set('f-height', data.height);
+  set('f-weight', data.weight);
+  set('f-sleep', data.sleep);
+  set('f-weeks', data.weeks);
+  set('f-injuries', data.injuries);
+  set('f-targetweight', data.targetWeight);
+
+  if (data.gender) setRadio('gender', data.gender);
+  if (data.bodytype) setRadio('bodytype', data.bodytype);
+  if (data.goal) setRadio('goal', data.goal);
+  if (data.training) setRadio('training', data.training);
+  if (data.experience) setRadio('experience', data.experience);
+  if (data.time) setRadio('time', data.time);
+  if (data.skill) setRadio('skill', data.skill);
+  if (data.diet) setRadio('diet', data.diet);
+  if (data.supplements) setRadio('supplements', data.supplements);
+  if (data.meals) setRadio('meals', String(data.meals));
+  if (data.actFactor) {
+    const select = document.getElementById('f-activity');
+    if (select) select.value = String(data.actFactor);
+  }
+  if (Array.isArray(data.equipment)) {
+    const allBoxes = document.querySelectorAll('#equipment-group input');
+    allBoxes.forEach(b => b.checked = false);
+    data.equipment.forEach(v => setCheck(v, true));
+  }
+
+  // Restore physique if it exists
+  if (data.physique && data.physique !== 'none') {
+    const card = document.querySelector(`.physique-card[data-physique="${data.physique}"]`);
+    if (card) {
+      document.querySelectorAll('.physique-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      window.selectedPhysique = data.physique;
+    }
+  }
+
+  showToast('Data Restored', 'Your previous inputs have been loaded into the form.', 'success');
+}
+
+// ────────────────────────────────────────────────
+// UI HELPERS
+// ────────────────────────────────────────────────
+function updateHeaderUI(user) {
+  const signinBtn = document.getElementById('btn-signin');
+  const userMenu = document.getElementById('user-menu');
+  const avatarImg = document.getElementById('user-avatar-img');
+  const avatarFallback = document.getElementById('user-avatar-fallback');
+  const nameShort = document.getElementById('user-name-short');
+  const ddName = document.getElementById('dd-name');
+  const ddEmail = document.getElementById('dd-email');
+
+  if (signinBtn) signinBtn.style.display = 'none';
+  if (userMenu) userMenu.classList.add('visible');
+
+  const firstName = (user.displayName || 'User').split(' ')[0];
+  if (nameShort) nameShort.textContent = firstName;
+  if (ddName) ddName.textContent = user.displayName || 'User';
+  if (ddEmail) ddEmail.textContent = user.email;
+
+  if (user.photoURL && avatarImg) {
+    avatarImg.src = user.photoURL;
+    avatarImg.style.display = 'block';
+    if (avatarFallback) avatarFallback.style.display = 'none';
+  } else {
+    if (avatarFallback) avatarFallback.textContent = (user.displayName || 'U').charAt(0).toUpperCase();
+  }
+}
+
+function setSaveStatus(state, label) {
+  // Header save status
+  const el = document.getElementById('save-status');
+  const lbl = document.getElementById('save-label');
+  // Form save status
+  const fel = document.getElementById('form-save-status');
+  const flbl = document.getElementById('form-save-label');
+
+  if (el) { el.className = `save-status ${state}`; }
+  if (lbl) lbl.textContent = label;
+  if (fel) { fel.className = `save-status ${state}`; fel.style.display = 'flex'; }
+  if (flbl) flbl.textContent = label;
+}
+
+function setAuthLoading(loading) {
+  const spinner = document.getElementById('auth-spinner');
+  const btn = document.getElementById('btn-signin');
+  if (spinner) { spinner.classList.toggle('active', loading); }
+  if (btn) btn.style.display = loading ? 'none' : 'flex';
+}
+
+function setStatusText(text) {
+  const el = document.getElementById('status-text');
+  if (el) el.textContent = text;
+}
+
+// ── Toast ────────────────────────────────────────
+function showToast(title, msg, type = 'success') {
+  const toast = document.getElementById('auth-toast');
+  const tt = document.getElementById('toast-title');
+  const tm = document.getElementById('toast-msg');
+  if (!toast) return;
+  toast.className = `auth-toast show ${type === 'error' ? 'error' : type === 'warn' ? 'warn' : ''}`;
+  tt.textContent = title;
+  tm.textContent = msg;
+  clearTimeout(window._apex._toastTimer);
+  window._apex._toastTimer = setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+// ────────────────────────────────────────────────
+// EXPORT & DELETE DATA
+// ────────────────────────────────────────────────
+window.exportUserData = async () => {
+  const user = window._apex.currentUser;
+  if (!user) { showToast('Not Signed In', 'Sign in to export data.', 'warn'); return; }
+  const data = {
+    profile: { name: user.displayName, email: user.email, uid: user.uid },
+    userData: window.userData || {},
+    calculations: window.calculations || {},
+    progressLog: window.progressLog || [],
+    exportedAt: new Date().toISOString(),
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `apex_data_${user.email}_${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('Exported!', 'Your data has been downloaded.', 'success');
+};
+
+window.clearAllUserData = async () => {
+  const user = window._apex.currentUser;
+  if (!user || !window._apex.db) { showToast('Not Signed In', 'Sign in first.', 'warn'); return; }
+  if (!confirm('⚠ This will permanently delete ALL your saved plans and progress logs from Firestore. Your Google account is not affected. Continue?')) return;
+
+  const { collection, getDocs, deleteDoc, doc } = window._apex.fs;
+  const db = window._apex.db;
+  try {
+    for (const col of ['plans', 'progressLogs']) {
+      const snap = await getDocs(collection(db, 'users', user.uid, col));
+      for (const d of snap.docs) await deleteDoc(doc(db, 'users', user.uid, col, d.id));
+    }
+    window.progressLog = [];
+    renderProgressTable();
+    await loadUserPlans(user.uid, db, window._apex.fs);
+    showToast('Data Cleared', 'All your data has been deleted from Firestore.', 'success');
+  } catch (e) {
+    showToast('Error', 'Could not delete all data. Check Firestore rules.', 'error');
+  }
+};
+
+// ────────────────────────────────────────────────
+// SANITIZE for Firestore (remove undefined, functions)
+// ────────────────────────────────────────────────
+function sanitizeForFirestore(obj) {
+  if (obj === null || obj === undefined) return null;
+  if (typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(sanitizeForFirestore).filter(v => v !== undefined);
+  const clean = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (typeof v === 'function') continue;
+    if (v === undefined) continue;
+    if (typeof v === 'object' && v !== null && !(v instanceof Array)) {
+      clean[k] = sanitizeForFirestore(v);
+    } else {
+      clean[k] = v;
+    }
+  }
+  return clean;
+}
+
+// ────────────────────────────────────────────────
+// INIT: Load config → bootstrap Firebase
+// ────────────────────────────────────────────────
+async function initAuth() {
+  const cfg = getSavedConfig();
+
+  // Show spinner while checking
+  const spinner = document.getElementById('auth-spinner');
+  const btn = document.getElementById('btn-signin');
+  if (spinner) spinner.classList.add('active');
+
+  if (isConfigValid(cfg)) {
+    try {
+      await bootstrapFirebase(cfg);
+      // auth state observer handles the rest
+    } catch (e) {
+      console.error('Firebase init failed:', e);
+      if (spinner) spinner.classList.remove('active');
+      if (btn) btn.style.display = 'flex';
+      showToast('Firebase Error', 'Config invalid or Firebase unavailable.', 'error');
+      handleUserSignedOut();
+    }
+  } else {
+    // No config saved yet
+    if (spinner) spinner.classList.remove('active');
+    if (btn) btn.style.display = 'flex';
+    handleUserSignedOut();
+  }
+}
+
+// ────────────────────────────────────────────────
+// GLOBAL PROXY: Hook into generatePlan + logProgress
+// ────────────────────────────────────────────────
+// We patch the existing global functions to also trigger Firebase saves
+
+const _origGenerate = window.generatePlan;
+window.generatePlan = async function() {
+  await _origGenerate.call(this);
+  // After plan is generated, save to Firestore if signed in
+  if (window._apex.currentUser && window._apex.savePlan) {
+    await window._apex.savePlan(userData, calculations);
+      const user = window._apex.currentUser;
+      if (!user || !window._apex.db) return;
+
+      const { collection, addDoc, doc, setDoc } = window._apex.fs;
+      const db = window._apex.db;
+
+      setSaveStatus('saving', 'SAVING…');
+
+      try {
+        // Save fitness inputs for auto-fill on next login
+        const inputsRef = doc(db, 'users', user.uid, 'profile', 'fitnessInputs');
+        await setDoc(inputsRef, { ...userData, savedAt: new Date().toISOString() });
+
+        // Save plan snapshot
+        const plansRef = collection(db, 'users', user.uid, 'plans');
+        const planDoc = {
+          userData: sanitizeForFirestore(userData),
+          calculations: sanitizeForFirestore(calculations),
+          createdAt: new Date().toISOString(),
+          goal: userData.goal,
+          physique: userData.physique || 'none',
+          targetCal: calculations.targetCal,
+          weeks: userData.weeks,
+        };
+        await addDoc(plansRef, planDoc);
+
+        setSaveStatus('saved', 'SAVED ✓');
+        setTimeout(() => setSaveStatus('idle', 'SYNCED'), 3000);
+
+        // Refresh dashboard plans list
+        await loadUserPlans(user.uid, db, window._apex.fs);
+
+        // Update dropdown status
+        const ddps = document.getElementById('dd-plan-status');
+        if (ddps) ddps.textContent = `Last plan: ${new Date().toLocaleDateString()}`;
+
+      } catch (e) {
+        console.error('Save error:', e);
+        setSaveStatus('error', 'SAVE FAILED');
+        showToast('Save Failed', 'Could not save to Firestore. Check your config.', 'error');
+      }
+    };
+};
+
+const _origLogProgress = window.logProgress;
+window.logProgress = async function() {
+  _origLogProgress.call(this);
+  // After logging, save to Firestore
+  if (window.progressLog && window.progressLog.length > 0) {
+    const latest = window.progressLog[window.progressLog.length - 1];
+    if (window._apex.currentUser && window._apex.saveProgressLog) {
+      await window._apex.saveProgressLog(latest);
+      // Refresh dashboard progress tab
+      const user = window._apex.currentUser;
+      if (user && window._apex.db) {
+        await loadProgressHistory(user.uid, window._apex.db, window._apex.fs);
+        document.getElementById('stat-weeks').textContent = window.progressLog.length;
+      }
+    }
+  }
+};
+
+// Start
+window.initAuth = initAuth;
+
+</script>
+
+<!-- =============================================
+     CONFIG MODAL + DASHBOARD UI SCRIPTS
+     (Non-module: can access DOM directly)
+     ============================================= -->
+<script>
+// ── Firebase Config Modal ──────────────────────
+window.openConfigModal = function() {
+  const overlay = document.getElementById('config-modal-overlay');
+  if (overlay) overlay.classList.add('open');
+
+  // Pre-fill if config exists
+  try {
+    const cfg = JSON.parse(localStorage.getItem('apex_firebase_config') || '{}');
+    ['apiKey','authDomain','projectId','storageBucket','messagingSenderId','appId'].forEach(k => {
+      const el = document.getElementById('cfg-' + k);
+      if (el && cfg[k]) el.value = cfg[k];
+    });
+  } catch {}
+};
+
+window.closeConfigModal = function() {
+  const overlay = document.getElementById('config-modal-overlay');
+  if (overlay) overlay.classList.remove('open');
+};
+
+window.saveFirebaseConfig = function() {
+  const fields = ['apiKey','authDomain','projectId','storageBucket','messagingSenderId','appId'];
+  const cfg = {};
+  let missing = [];
+  fields.forEach(k => {
+    const el = document.getElementById('cfg-' + k);
+    if (el && el.value.trim()) cfg[k] = el.value.trim();
+    else if (['apiKey','authDomain','projectId','appId'].includes(k)) missing.push(k);
+  });
+
+  if (missing.length) {
+    alert('Please fill in required fields: ' + missing.join(', '));
+    return;
+  }
+
+  localStorage.setItem('apex_firebase_config', JSON.stringify(cfg));
+  closeConfigModal();
+
+  // Show reload prompt
+  if (confirm('Firebase config saved! Reload the page to connect? (Required to activate authentication)')) {
+    location.reload();
+  }
+};
+
+// ── Dropdown ──────────────────────────────────
+window.toggleUserDropdown = function() {
+  const dropdown = document.getElementById('user-dropdown');
+  const btn = document.getElementById('user-avatar-btn');
+  if (!dropdown) return;
+  const isOpen = dropdown.classList.contains('open');
+  dropdown.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+
+  if (!isOpen) {
+    setTimeout(() => document.addEventListener('click', closeOnOutsideClick, { once: true }), 0);
+  }
+};
+
+function closeOnOutsideClick(e) {
+  const dropdown = document.getElementById('user-dropdown');
+  const btn = document.getElementById('user-avatar-btn');
+  if (dropdown && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+    closeDropdown();
+  }
+}
+
+window.closeDropdown = function() {
+  const dropdown = document.getElementById('user-dropdown');
+  const btn = document.getElementById('user-avatar-btn');
+  if (dropdown) dropdown.classList.remove('open');
+  if (btn) btn.classList.remove('open');
+};
+
+// ── Dashboard Visibility ───────────────────────
+window.showDashboard = function() {
+  const el = document.getElementById('dashboard-section');
+  if (el) {
+    el.classList.add('visible');
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  closeDropdown();
+};
+
+window.hideDashboard = function() {
+  const el = document.getElementById('dashboard-section');
+  if (el) el.classList.remove('visible');
+};
+
+window.scrollToForm = function() {
+  hideDashboard();
+  document.getElementById('form-section')?.scrollIntoView({ behavior: 'smooth' });
+};
+
+// ── Dashboard Tabs ─────────────────────────────
+window.showDTab = function(name, btn) {
+  document.querySelectorAll('.dtab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.dtab').forEach(b => b.classList.remove('active'));
+  const pane = document.getElementById('dtab-' + name);
+  if (pane) pane.classList.add('active');
+  if (btn) btn.classList.add('active');
+};
+
+// ── Code copy buttons (config modal) ──────────
+window.copyCode = function(el) {
+  const code = el.closest('.config-code').textContent.trim().replace(el.textContent.trim(), '').trim();
+  navigator.clipboard?.writeText(code).then(() => {
+    el.textContent = 'Copied!';
+    setTimeout(() => el.textContent = 'Copy', 1500);
+  });
+};
+
+// ── No-config: Show setup prompt ──────────────
+window.promptFirebaseSetup = function() {
+  openConfigModal();
+};
+
+// Override sign in button if no config → show config modal instead
+document.addEventListener('DOMContentLoaded', () => {
+  // If no config, clicking sign-in opens setup modal
+  const cfg = (() => { try { return JSON.parse(localStorage.getItem('apex_firebase_config') || 'null'); } catch { return null; } })();
+  if (!cfg || !cfg.apiKey) {
+    const btn = document.getElementById('btn-signin');
+    if (btn) {
+      btn.onclick = () => openConfigModal();
+    }
+  }
+});
+</script>
+</body>
+</html>
+}
